@@ -1,0 +1,12 @@
+{
+	"name": "hxWebSockets",
+	"license": "MIT",
+	"tags": ["websockets"],
+	"description": "websockets for all haxe platforms",
+	"contributors": ["ianharrigan"],
+	"releasenote": "",
+	"version": "1.0.0",
+	"url": "https://github.com/ianharrigan/hxWebSockets",
+	"dependencies": {
+	}
+}
