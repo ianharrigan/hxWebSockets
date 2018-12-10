@@ -11,4 +11,5 @@ class HttpHeader {
     public static inline var PRAGMA:String = "Pragma";
     public static inline var CACHE_CONTROL:String = "Cache-Control";
     public static inline var ORIGIN:String = "Origin";
+    public static inline var X_WEBSOCKET_REJECT_REASON:String = "X-WebSocket-Reject-Reason";
 }

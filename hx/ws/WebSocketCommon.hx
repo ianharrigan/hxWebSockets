@@ -1,12 +1,14 @@
 package hx.ws;
 
+import haxe.crypto.Base64;
+import haxe.crypto.Sha1;
 import haxe.io.Bytes;
 import haxe.io.Error;
 
 class WebSocketCommon {
     private static var _nextId:Int = 1;
     public var id:Int;
-    public var state:HandlerState = HandlerState.Handshake;
+    public var state:State = State.Handshake;
     
     private var _socket:SocketImpl;
     
@@ -55,7 +57,7 @@ class WebSocketCommon {
     
     private function handleData() {
         switch (state) {
-            case HandlerState.Head:
+            case State.Head:
                 if (_buffer.available < 2) return;
                 
                 var b0 = _buffer.readByte();
@@ -67,9 +69,9 @@ class WebSocketCommon {
                 _partialLength = ((b1 >> 0) & 0x7F);
                 _isMasked = ((b1 >> 7) & 1) != 0;
 
-                state = HandlerState.HeadExtraLength;
+                state = State.HeadExtraLength;
                 handleData(); // may be more data
-            case HandlerState.HeadExtraLength:
+            case State.HeadExtraLength:
                 if (_partialLength == 126) {
                     if (_buffer.available < 2) return;
                     _length = _buffer.readUnsignedShort();
@@ -81,16 +83,16 @@ class WebSocketCommon {
                 } else {
                     _length = _partialLength;
                 }
-                state = HandlerState.HeadExtraMask;
+                state = State.HeadExtraMask;
                 handleData(); // may be more data
-            case HandlerState.HeadExtraMask:
+            case State.HeadExtraMask:
                 if (_isMasked) {
                     if (_buffer.available < 4) return;
                     _mask = _buffer.readBytes(4);
                 }
-                state = HandlerState.Body;
+                state = State.Body;
                 handleData(); // may be more data
-            case HandlerState.Body:
+            case State.Body:
                 if (_buffer.available < _length) return;
                 if (_payload == null) {
                     _payload = new Buffer();
@@ -127,9 +129,9 @@ class WebSocketCommon {
                         close();
                 }
                 
-                if (state != HandlerState.Closed) state = HandlerState.Head;
+                if (state != State.Closed) state = State.Head;
                 handleData(); // may be more data
-            case HandlerState.Closed:
+            case State.Closed:
                 close();
             case _:
                 trace('State not impl: ${state}');
@@ -137,11 +139,11 @@ class WebSocketCommon {
     }
     
     public function close() {
-        if (state != HandlerState.Closed) {
+        if (state != State.Closed) {
             try {
                 Log.debug("Closed", id);
                 sendFrame(Bytes.alloc(0), OpCode.Close);
-                state = HandlerState.Closed;
+                state = State.Closed;
                 _socket.close();
             } catch (e:Dynamic) { }
             
@@ -250,10 +252,10 @@ class WebSocketCommon {
         }
         
         if (needClose == true) { // dont want to send the Close frame here
-            if (state != HandlerState.Closed) {
+            if (state != State.Closed) {
                 try {
                     Log.debug("Closed", id);
-                    state = HandlerState.Closed;
+                    state = State.Closed;
                     _socket.close();
                 } catch (e:Dynamic) { }
                 
@@ -269,8 +271,15 @@ class WebSocketCommon {
         
         Log.data(data, id);
         
-        _socket.output.write(Bytes.ofString(data));
-        _socket.output.flush();
+        try {
+            _socket.output.write(Bytes.ofString(data));
+            _socket.output.flush();
+        } catch (e:Dynamic) {
+            if (onerror != null) {
+                onerror(Std.string(e));
+            }
+            close();
+        }
     }
     
     public function sendHttpResponse(httpResponse:HttpResponse) {
@@ -322,4 +331,7 @@ class WebSocketCommon {
         return httpResponse;
     }
     
+    private inline function makeWSKey(key:String):String {
+        return Base64.encode(Sha1.make(Bytes.ofString(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
+    }
 }

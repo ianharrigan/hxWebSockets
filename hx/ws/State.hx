@@ -1,6 +1,6 @@
 package hx.ws;
 
-enum HandlerState {
+enum State {
     Handshake;
     Head;
     HeadExtraLength;

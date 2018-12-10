@@ -64,7 +64,7 @@ class WebSocketServer
             
             var toRemove = [];
             for (h in _handlers) {
-                if (h.state == HandlerState.Closed) {
+                if (h.state == State.Closed) {
                     toRemove.push(h);
                 }
             }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<vbox width="100%" style="padding-bottom: 20px;">
+    <label id="infoLabel" text="Client" style="font-size: 20px;" />
+    
+    <hbox>
+        <textfield id="uri" text="ws://localhost:5000" />
+        <button id="connectButton" text="Connect" />
+        <button id="disconnectButton" text="Disconnect" />
+    </hbox>
+    
+    <grid columns="3" width="100%">
+        <label text="Send:" width="33%" />
+        <label text="Received:" width="34%" />
+        <label text="Log:" width="33%" />
+        
+        <textarea id="sendText" width="33%" height="100" />
+        <textarea id="recvText" width="34%" height="100" />
+        <textarea id="logText" width="33%" height="100" />
+    </grid>
+    
+    <button id="sendButton" text="Send" />
+    
+    <component width="100%" height="1" style="background-color: #AAAAAA" />
+</vbox>

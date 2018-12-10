@@ -20,6 +20,8 @@ class WebSocket extends WebSocketCommon {
     public var _port:Int;
     
     private var _processThread:Thread;
+    private var _key:String = "wskey";
+    private var _encodedKey:String = "wskey";
     
     public function new(uri:String) {
         super();
@@ -40,7 +42,7 @@ class WebSocket extends WebSocketCommon {
     private function processThread() {
         var ws:WebSocket = Thread.readMessage(true);
         Log.debug("Thread started", ws.id);
-        while (ws.state != HandlerState.Closed) { // TODO: should think about mutex
+        while (ws.state != State.Closed) { // TODO: should think about mutex
             ws.process();
             Sys.sleep(.01);
         }
@@ -61,15 +63,15 @@ class WebSocket extends WebSocketCommon {
         httpRequest.headers.set(HttpHeader.PRAGMA, "no-cache");
         httpRequest.headers.set(HttpHeader.CACHE_CONTROL, "no-cache");
         httpRequest.headers.set(HttpHeader.ORIGIN, _socket.host().host.toString() + ":" + _socket.host().port);
-        var key = "wskey";
-        httpRequest.headers.set(HttpHeader.SEC_WEBSOCKET_KEY, Base64.encode(Utf8Encoder.encode(key)));
+        _encodedKey = Base64.encode(Utf8Encoder.encode(_key));
+        httpRequest.headers.set(HttpHeader.SEC_WEBSOCKET_KEY, _encodedKey);
         
         sendHttpRequest(httpRequest);
     }
     
     private override function handleData() {
         switch (state) {
-            case HandlerState.Handshake:
+            case State.Handshake:
                 var httpResponse = recvHttpResponse();
                 if (httpResponse == null) {
                     return;
@@ -84,9 +86,26 @@ class WebSocket extends WebSocketCommon {
     }
     
     private function handshake(httpResponse:HttpResponse) {
-        // TODO: can be anything - totally insecure
+        trace(httpResponse.toString());
+        if (httpResponse.code != 101) {
+            if (onerror != null) {
+                onerror(httpResponse.headers.get(HttpHeader.X_WEBSOCKET_REJECT_REASON));
+            }
+            close();
+            return;
+        }
+        
+        var secKey = httpResponse.headers.get(HttpHeader.SEC_WEBSOSCKET_ACCEPT);
+        if (secKey != makeWSKey(_encodedKey)) {
+            if (onerror != null) {
+                onerror("Error during WebSocket handshake: Incorrect 'Sec-WebSocket-Accept' header value");
+            }
+            close();
+            return;
+        }
+
         _onopenCalled = false;
-        state = HandlerState.Head;
+        state = State.Head;
     }
 }
 
