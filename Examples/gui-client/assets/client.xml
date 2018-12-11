@@ -4,6 +4,7 @@
     
     <hbox>
         <textfield id="uri" text="ws://localhost:5000" />
+        <checkbox id="binaryCheck" text="Binary" verticalAlign="center" />
         <button id="connectButton" text="Connect" />
         <button id="disconnectButton" text="Disconnect" />
     </hbox>
@@ -18,7 +19,14 @@
         <textarea id="logText" width="33%" height="100" />
     </grid>
     
-    <button id="sendButton" text="Send" />
+    <hbox width="100%">
+        <button id="sendButton" text="Send" />
+        <spacer width="100%" />
+        <button id="sendLargeButton" text="Send Large" />
+        <button id="sendHugeButton" text="Send Huge" />
+        <button id="sendBinaryButton" text="Send Binary" />
+    </hbox>
+    <image id="binaryImageResult" />
     
     <component width="100%" height="1" style="background-color: #AAAAAA" />
 </vbox>

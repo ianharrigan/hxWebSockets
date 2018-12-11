@@ -2,7 +2,92 @@ package hx.ws;
 
 #if js 
 
-typedef WebSocket = js.html.WebSocket;
+import haxe.Constraints.Function;
+import haxe.io.Bytes;
+
+class WebSocket { // lets use composition so we can intercept send / onmessage and convert to something haxey if its binary
+    private var _ws:js.html.WebSocket = null;
+    
+    public function new(url:String) {
+        _ws = new js.html.WebSocket(url);
+    }
+    
+    public var onopen(get, set):Function;
+    private function get_onopen():Function {
+        return _ws.onopen;
+    }
+    private function set_onopen(value:Function):Function {
+        _ws.onopen = value;
+        return value;
+    }
+    
+    public var onclose(get, set):Function;
+    private function get_onclose():Function {
+        return _ws.onclose;
+    }
+    private function set_onclose(value:Function):Function {
+        _ws.onclose = value;
+        return value;
+    }
+    
+    public var onerror(get, set):Function;
+    private function get_onerror():Function {
+        return _ws.onerror;
+    }
+    private function set_onerror(value:Function):Function {
+        _ws.onerror = value;
+        return value;
+    }
+    
+    private var _onmessage:Function = null;
+    public var onmessage(get, set):Function;
+    private function get_onmessage():Function {
+        return _onmessage;
+    }
+    private function set_onmessage(value:Function):Function {
+        _onmessage = value;
+        _ws.onmessage = function(message) {
+            if (_onmessage != null) {
+                if (Std.is(message.data, js.html.ArrayBuffer)) {
+                    var buffer = new Buffer();
+                    buffer.writeBytes(Bytes.ofData(message.data));
+                    _onmessage({
+                        type: "binary",
+                        data: buffer
+                    });
+                } else {
+                    _onmessage({
+                        type: "text",
+                        data: message.data
+                    });
+                }
+            }
+        };
+        return value;
+    }
+    
+	public var binaryType(get, set):BinaryType;
+    private function get_binaryType() {
+        return _ws.binaryType;
+    }
+    private function set_binaryType(value:BinaryType):BinaryType {
+        _ws.binaryType = value;
+        return value;
+    }
+    
+    public function close() {
+        _ws.close();
+    }
+    
+    public function send(data:Any) {
+        if (Std.is(data, Buffer)) {
+            var buffer = cast(data, Buffer);
+            _ws.send(buffer.readAllAvailableBytes().getData());
+        } else {
+            _ws.send(data);
+        }
+    }
+}
 
 #elseif sys
 
@@ -22,6 +107,8 @@ class WebSocket extends WebSocketCommon {
     private var _processThread:Thread;
     private var _key:String = "wskey";
     private var _encodedKey:String = "wskey";
+    
+	public var binaryType:BinaryType;
     
     public function new(uri:String) {
         super();

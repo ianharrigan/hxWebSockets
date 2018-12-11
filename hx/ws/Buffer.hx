@@ -4,12 +4,12 @@ import haxe.io.Bytes;
 
 class Buffer {
     public var available(default, null):Int = 0;
+    public var length(default, null):Int = 0;
     private var currentOffset:Int = 0;
     private var currentData: Bytes = null;
     private var chunks:Array<Bytes> = [];
 
     public function new() {
-
     }
 
     public function writeByte(v:Int) {
@@ -37,6 +37,7 @@ class Buffer {
     public function writeBytes(data:Bytes) {
         chunks.push(data);
         available += data.length;
+        length = available;
     }
 
     public function readAllAvailableBytes():Bytes {
@@ -91,6 +92,7 @@ class Buffer {
             currentData = chunks.shift();
         }
         available--;
+        length = available;
         return currentData.get(currentOffset++);
     }
     

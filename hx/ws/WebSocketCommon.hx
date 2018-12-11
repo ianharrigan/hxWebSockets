@@ -33,11 +33,13 @@ class WebSocketCommon {
     }
     
     public function send(data:Any) {
-        Log.data(data, id);
         if (Std.is(data, String)) {
+            Log.data(data, id);
             sendFrame(Utf8Encoder.encode(data), OpCode.Text);
         } else if (Std.is(data, Bytes)) {
             sendFrame(data, OpCode.Binary);
+        } else if (Std.is(data, Buffer)) {
+            sendFrame(cast(data, Buffer).readAllAvailableBytes(), OpCode.Binary);
         }
     }
     
@@ -106,8 +108,11 @@ class WebSocketCommon {
                             var unmaskedMessageData = (_isMasked) ? applyMask(messageData, _mask) : messageData;
                             if (_frameIsBinary) {
                                 if (this.onmessage != null) {
+                                    var buffer = new Buffer();
+                                    buffer.writeBytes(unmaskedMessageData);
                                     this.onmessage({
-                                        data: unmaskedMessageData
+                                        type: "binary",
+                                        data: buffer
                                     });
                                 }
                             } else {
@@ -115,6 +120,7 @@ class WebSocketCommon {
                                 Log.data(stringPayload, id);
                                 if (this.onmessage != null) {
                                     this.onmessage({
+                                        type: "text",
                                         data: stringPayload
                                     });
                                 }
