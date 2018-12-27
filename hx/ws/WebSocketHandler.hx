@@ -64,6 +64,7 @@ class WebSocketHandler extends Handler {
         sendHttpResponse(httpResponse);
         
         if (httpResponse.code == 101) {
+            _onopenCalled = false;
             state = State.Head;
             Log.debug('Connected', id);
         } else {
