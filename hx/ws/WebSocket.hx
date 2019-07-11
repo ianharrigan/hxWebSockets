@@ -103,7 +103,8 @@ import haxe.io.Bytes;
 class WebSocket extends WebSocketCommon {
     public var _host:String;
     public var _port:Int;
-    
+    public var _uri:String;
+
     private var _processThread:Thread;
     private var _key:String = "wskey";
     private var _encodedKey:String = "wskey";
@@ -132,6 +133,7 @@ class WebSocket extends WebSocketCommon {
         if (parsedPort > 0 ) {
             _port = parsedPort;
         }
+        _uri = uriRegExp.matched(5);
         _socket.setBlocking(true);
         _socket.connect(new sys.net.Host(_host), _port);
         _socket.setBlocking(false);
@@ -155,10 +157,10 @@ class WebSocket extends WebSocketCommon {
     public function sendHandshake() {
         var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
-        httpRequest.uri = "/";
+        httpRequest.uri = _uri.length > 0 ? _uri : "/";
         httpRequest.httpVersion = "HTTP/1.1";
-        
-        httpRequest.headers.set(HttpHeader.HOST, _socket.host().host.toString() + ":" + _socket.host().port);
+
+        httpRequest.headers.set(HttpHeader.HOST, _host + ":" + _port);
         httpRequest.headers.set(HttpHeader.USER_AGENT, "hxWebSockets");
         httpRequest.headers.set(HttpHeader.SEC_WEBSOSCKET_VERSION, "13");
         httpRequest.headers.set(HttpHeader.UPGRADE, "websocket");
