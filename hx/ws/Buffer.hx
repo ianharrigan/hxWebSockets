@@ -52,18 +52,34 @@ class Buffer {
         return StringTools.trim(bytes.toString());
     }
 
-    public function readUntil(char:String):Bytes {
-        var pos = peekUntil(char.charCodeAt(0));
-        if (pos == -1) {
+    public function readLinesUntil(delimiter:String):Array<String> {
+        var bytes = readUntil(delimiter);
+        if (bytes == null) {
             return null;
         }
-        
-        var size = pos - currentOffset;
-        var bytes = readBytes(size);
-        
-        return bytes;
+        return StringTools.trim(bytes.toString()).split("\n");
     }
-    
+
+
+    public function readUntil(delimiter:String):Bytes {
+        var dl = delimiter.length;
+
+        for (i in 0 ... available-dl) {
+            var matched = true;
+            for (j in 0 ... dl) {
+                if (peekByte(i+j) == delimiter.charCodeAt(j)) continue;
+                matched = false;
+            }
+
+            if (matched) {
+                var bytes = readBytes(i+dl);
+                return bytes;
+            }
+        }
+
+        return null;
+    }
+
     public function readBytes(count:Int):Bytes {
         var count2 = Std.int(Math.min(count, available));
         var out = Bytes.alloc(count2);
@@ -95,7 +111,7 @@ class Buffer {
         length = available;
         return currentData.get(currentOffset++);
     }
-    
+
     public function peekByte(offset:Int):Int {
         if (available <= 0) throw 'No bytes available';
         var tempOffset = offset;
@@ -111,7 +127,7 @@ class Buffer {
         }
         return tempData.get(tempOffset);
     }
-    
+
     public function peekUntil(byte:Int):Int {
         var tempOffset = currentOffset;
         var tempData = chunks[0];
@@ -130,10 +146,10 @@ class Buffer {
             }
             tempOffset++;
         }
-        
+
         return -1;
     }
-    
+
     public function endsWith(e:String):Bool {
         var i = available - e.length;
         var n = currentOffset;
@@ -144,7 +160,7 @@ class Buffer {
             i++;
             n++;
         }
-        
+
         return true;
     }
 }
