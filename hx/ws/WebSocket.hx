@@ -111,15 +111,31 @@ class WebSocket extends WebSocketCommon {
 	public var binaryType:BinaryType;
     
     public function new(uri:String) {
-        super();
-        
         var uriRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
-        if (!uriRegExp.match(uri)) throw 'Uri not matching websocket uri "${uri}"';
-        
+
+        if ( ! uriRegExp.match(uri)) throw 'Uri not matching websocket uri "${uri}"';
+
+        var proto = uriRegExp.matched(1);
+        if (proto == "wss") {
+            _port = 443;
+            var s = new SecureSocketImpl();
+            super(s);
+        } else if (proto == "ws") {
+            _port = 80;
+            super();
+        } else {
+            throw 'Unknown protocol $proto';
+        }
+
         _host = uriRegExp.matched(2);
-        _port = Std.parseInt(uriRegExp.matched(4));
+        var parsedPort = Std.parseInt(uriRegExp.matched(4));
+        if (parsedPort > 0 ) {
+            _port = parsedPort;
+        }
+        _socket.setBlocking(true);
         _socket.connect(new sys.net.Host(_host), _port);
-        
+        _socket.setBlocking(false);
+
         _processThread = Thread.create(processThread);
         _processThread.sendMessage(this);
         
