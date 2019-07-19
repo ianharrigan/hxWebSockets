@@ -91,7 +91,10 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
 
 #elseif sys
 
-#if neko
+
+#if (haxe_ver >= 4)
+import sys.thread.Thread;
+#elseif neko
 import neko.vm.Thread;
 #elseif cpp
 import cpp.vm.Thread;
