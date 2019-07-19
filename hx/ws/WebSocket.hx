@@ -91,7 +91,10 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
 
 #elseif sys
 
-#if neko
+
+#if (haxe_ver >= 4)
+import sys.thread.Thread;
+#elseif neko
 import neko.vm.Thread;
 #elseif cpp
 import cpp.vm.Thread;
@@ -103,7 +106,8 @@ import haxe.io.Bytes;
 class WebSocket extends WebSocketCommon {
     public var _host:String;
     public var _port:Int;
-    
+    public var _uri:String;
+
     private var _processThread:Thread;
     private var _key:String = "wskey";
     private var _encodedKey:String = "wskey";
@@ -111,15 +115,32 @@ class WebSocket extends WebSocketCommon {
 	public var binaryType:BinaryType;
     
     public function new(uri:String) {
-        super();
-        
         var uriRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
-        if (!uriRegExp.match(uri)) throw 'Uri not matching websocket uri "${uri}"';
-        
+
+        if ( ! uriRegExp.match(uri)) throw 'Uri not matching websocket uri "${uri}"';
+
+        var proto = uriRegExp.matched(1);
+        if (proto == "wss") {
+            _port = 443;
+            var s = new SecureSocketImpl();
+            super(s);
+        } else if (proto == "ws") {
+            _port = 80;
+            super();
+        } else {
+            throw 'Unknown protocol $proto';
+        }
+
         _host = uriRegExp.matched(2);
-        _port = Std.parseInt(uriRegExp.matched(4));
+        var parsedPort = Std.parseInt(uriRegExp.matched(4));
+        if (parsedPort > 0 ) {
+            _port = parsedPort;
+        }
+        _uri = uriRegExp.matched(5);
+        _socket.setBlocking(true);
         _socket.connect(new sys.net.Host(_host), _port);
-        
+        _socket.setBlocking(false);
+
         _processThread = Thread.create(processThread);
         _processThread.sendMessage(this);
         
@@ -139,10 +160,10 @@ class WebSocket extends WebSocketCommon {
     public function sendHandshake() {
         var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
-        httpRequest.uri = "/";
+        httpRequest.uri = _uri.length > 0 ? _uri : "/";
         httpRequest.httpVersion = "HTTP/1.1";
-        
-        httpRequest.headers.set(HttpHeader.HOST, _socket.host().host.toString() + ":" + _socket.host().port);
+
+        httpRequest.headers.set(HttpHeader.HOST, _host + ":" + _port);
         httpRequest.headers.set(HttpHeader.USER_AGENT, "hxWebSockets");
         httpRequest.headers.set(HttpHeader.SEC_WEBSOSCKET_VERSION, "13");
         httpRequest.headers.set(HttpHeader.UPGRADE, "websocket");
