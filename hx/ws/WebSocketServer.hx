@@ -38,7 +38,8 @@ class WebSocketServer
         _serverSocket.listen(_maxConnections);
         Log.info('Starting server - ${_host}:${_port} (maxConnections: ${_maxConnections})');
         
-        /*
+        #if cs
+        
         while (true) {
             var continueLoop = tick();
             if (continueLoop == false) {
@@ -47,11 +48,15 @@ class WebSocketServer
             
             Sys.sleep(sleepAmount);
         }
-        */
+        
+        #else
+        
         MainLoop.add(function() {
             tick();
             Sys.sleep(sleepAmount);
         });
+        
+        #end
     }
     
     public function tick() {

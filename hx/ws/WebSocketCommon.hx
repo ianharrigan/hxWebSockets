@@ -249,7 +249,21 @@ class WebSocketCommon {
                         _buffer.writeBytes(data.sub(0, read));
                     }
                 } catch (e:Dynamic) {
+                    #if cs
+                    
+                    needClose = true;
+                    if (Std.is(e, cs.system.io.IOException)) {
+                        var ioex = cast(e, cs.system.io.IOException);
+                        if (Std.is(ioex.GetBaseException(), cs.system.net.sockets.SocketException)) {
+                            var sockex = cast(ioex.GetBaseException(), cs.system.net.sockets.SocketException);
+                            needClose = !(sockex.SocketErrorCode == cs.system.net.sockets.SocketError.WouldBlock);
+                        }
+                    }
+                    #else
+                    
                     needClose = !(e == 'Blocking' || (Std.is(e, Error) && (e:Error).match(Error.Blocked)));
+                    
+                    #end
                 }
                 
                 if (needClose == false) {

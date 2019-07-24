@@ -121,7 +121,7 @@ class WebSocket extends WebSocketCommon {
 
         var proto = uriRegExp.matched(1);
         if (proto == "wss") {
-            #if java
+            #if (java || cs)
             
             throw "Secure sockets not implemented";
             
