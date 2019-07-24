@@ -8,7 +8,7 @@ class WebSocketHandler extends Handler {
         _socket.setBlocking(false);
         Log.debug('New socket handler', id);
     }
-    
+
     private override function handleData() {
         switch (state) {
             case State.Handshake:
@@ -16,17 +16,17 @@ class WebSocketHandler extends Handler {
                 if (httpRequest == null) {
                     return;
                 }
-                
+
                 handshake(httpRequest);
                 handleData();
             case _:
                 super.handleData();
         }
     }
-    
+
     public function handshake(httpRequest:HttpRequest) {
         var httpResponse = new HttpResponse();
-        
+
         httpResponse.headers.set(HttpHeader.SEC_WEBSOSCKET_VERSION, "13");
         if (httpRequest.method != "GET" || httpRequest.httpVersion != "HTTP/1.1") {
             httpResponse.code = 400;
@@ -53,16 +53,16 @@ class WebSocketHandler extends Handler {
             var key = httpRequest.headers.get(HttpHeader.SEC_WEBSOCKET_KEY);
             var result = makeWSKey(key);
             Log.debug('Handshaking key - ${result}', id);
-            
+
             httpResponse.code = 101;
             httpResponse.text = "Switching Protocols";
             httpResponse.headers.set(HttpHeader.UPGRADE, "websocket");
             httpResponse.headers.set(HttpHeader.CONNECTION, "Upgrade");
             httpResponse.headers.set(HttpHeader.SEC_WEBSOSCKET_ACCEPT, result);
         }
-        
+
         sendHttpResponse(httpResponse);
-        
+
         if (httpResponse.code == 101) {
             _onopenCalled = false;
             state = State.Head;

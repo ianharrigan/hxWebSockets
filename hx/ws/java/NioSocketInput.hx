@@ -8,7 +8,7 @@ import java.io.PipedOutputStream;
 class NioSocketInput extends NativeInput {
     public var socket:NioSocket;
     public var pipedOutputStream:PipedOutputStream;
-    
+
     public function new(socket:NioSocket) {
         try {
             pipedOutputStream = new PipedOutputStream();
@@ -18,7 +18,7 @@ class NioSocketInput extends NativeInput {
             trace(e);
         }
     }
-    
+
     public override function readBytes(s:Bytes, pos:Int, len:Int):Int {
         if (stream.available() == 0) {
             return 0;

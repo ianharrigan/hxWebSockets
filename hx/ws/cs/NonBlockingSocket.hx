@@ -8,13 +8,13 @@ import cs.system.net.sockets.SocketAsyncEventArgs;
 class NonBlockingSocket extends Socket {
     private var _acceptedSockets:Array<NativeSocket> = [];
     private var _socketAsyncEventArgs:SocketAsyncEventArgs = null;
-    
+
     public function new() {
         super();
         setBlocking(false);
-        
+
     }
-    
+
     public override function accept():NonBlockingSocket {
         if (_acceptedSockets.length > 0) {
             var n = _acceptedSockets.shift();
@@ -32,7 +32,7 @@ class NonBlockingSocket extends Socket {
         }
         throw "Blocking";
     }
-    
+
     private function onAcceptCompleted(sender:Dynamic, e:SocketAsyncEventArgs) {
         _acceptedSockets.push(e.AcceptSocket);
         _socketAsyncEventArgs = null;

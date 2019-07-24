@@ -9,19 +9,19 @@ class WebSocketCommon {
     private static var _nextId:Int = 1;
     public var id:Int;
     public var state:State = State.Handshake;
-    
+
     private var _socket:SocketImpl;
-    
+
     private var _onopenCalled:Null<Bool> = null;
     private var _lastError:Dynamic = null;
-    
+
     public var onopen:Void->Void;
     public var onclose:Void->Void;
     public var onerror:Dynamic->Void;
     public var onmessage:Dynamic->Void;
-    
+
     private var _buffer:Buffer = new Buffer();
-    
+
     public function new(socket:SocketImpl = null) {
         id = _nextId++;
         if (socket == null) {
@@ -31,7 +31,7 @@ class WebSocketCommon {
             _socket = socket;
         }
     }
-    
+
     public function send(data:Any) {
         if (Std.is(data, String)) {
             Log.data(data, id);
@@ -42,7 +42,7 @@ class WebSocketCommon {
             sendFrame(cast(data, Buffer).readAllAvailableBytes(), OpCode.Binary);
         }
     }
-    
+
     private function sendFrame(data:Bytes, type:OpCode) {
         writeBytes(prepareFrame(data, type, true));
     }
@@ -56,12 +56,12 @@ class WebSocketCommon {
     private var _mask:Bytes;
     private var _payload:Buffer = null;
     private var _lastPong:Date = null;
-    
+
     private function handleData() {
         switch (state) {
             case State.Head:
                 if (_buffer.available < 2) return;
-                
+
                 var b0 = _buffer.readByte();
                 var b1 = _buffer.readByte();
 
@@ -134,7 +134,7 @@ class WebSocketCommon {
                     case OpCode.Close:
                         close();
                 }
-                
+
                 if (state != State.Closed) state = State.Head;
                 handleData(); // may be more data
             case State.Closed:
@@ -143,7 +143,7 @@ class WebSocketCommon {
                 trace('State not impl: ${state}');
         }
     }
-    
+
     public function close() {
         if (state != State.Closed) {
             try {
@@ -152,13 +152,13 @@ class WebSocketCommon {
                 state = State.Closed;
                 _socket.close();
             } catch (e:Dynamic) { }
-            
+
             if (onclose != null) {
                 onclose();
             }
         }
     }
-    
+
     private function writeBytes(data:Bytes) {
         try {
             _socket.output.write(data);
@@ -170,7 +170,7 @@ class WebSocketCommon {
             }
         }
     }
-    
+
     private function prepareFrame(data:Bytes, type:OpCode, isFinal:Bool):Bytes {
         var out = new Buffer();
         var isMasked = false; // All clientes messages must be masked: http://tools.ietf.org/html/rfc6455#section-5.1
@@ -204,13 +204,13 @@ class WebSocketCommon {
         maskData.set(3, Std.random(256));
         return maskData;
     }
-    
+
     private static function applyMask(payload:Bytes, mask:Bytes) {
         var maskedPayload = Bytes.alloc(payload.length);
         for (n in 0 ... payload.length) maskedPayload.set(n, payload.get(n) ^ mask.get(n % mask.length));
         return maskedPayload;
     }
-    
+
     private function process() {
         if (_onopenCalled == false) {
             _onopenCalled = true;
@@ -218,7 +218,7 @@ class WebSocketCommon {
                 onopen();
             }
         }
-        
+
         if (_lastError != null) {
             var error = _lastError;
             _lastError = null;
@@ -226,7 +226,7 @@ class WebSocketCommon {
                 onerror(error);
             }
         }
-        
+
         var needClose = false;
         var result = null;
         try {
@@ -235,7 +235,7 @@ class WebSocketCommon {
             Log.debug("Error selecting socket: " + e);
             needClose = true;
         }
-        
+
         if (result != null && needClose == false) {
             if (result.read.length > 0) {
                 try {
@@ -250,7 +250,7 @@ class WebSocketCommon {
                     }
                 } catch (e:Dynamic) {
                     #if cs
-                    
+
                     needClose = true;
                     if (Std.is(e, cs.system.io.IOException)) {
                         var ioex = cast(e, cs.system.io.IOException);
@@ -260,18 +260,18 @@ class WebSocketCommon {
                         }
                     }
                     #else
-                    
+
                     needClose = !(e == 'Blocking' || (Std.is(e, Error) && (e:Error).match(Error.Blocked)));
-                    
+
                     #end
                 }
-                
+
                 if (needClose == false) {
                     handleData();
                 }
             }
         }
-        
+
         if (needClose == true) { // dont want to send the Close frame here
             if (state != State.Closed) {
                 try {
@@ -279,19 +279,19 @@ class WebSocketCommon {
                     state = State.Closed;
                     _socket.close();
                 } catch (e:Dynamic) { }
-                
+
                 if (onclose != null) {
                     onclose();
                 }
             }
         }
     }
-    
+
     public function sendHttpRequest(httpRequest:HttpRequest) {
         var data = httpRequest.build();
-        
+
         Log.data(data, id);
-        
+
         try {
             _socket.output.write(Bytes.ofString(data));
             _socket.output.flush();
@@ -302,21 +302,21 @@ class WebSocketCommon {
             close();
         }
     }
-    
+
     public function sendHttpResponse(httpResponse:HttpResponse) {
         var data = httpResponse.build();
-        
+
         Log.data(data, id);
-        
+
         _socket.output.write(Bytes.ofString(data));
         _socket.output.flush();
     }
-    
+
     public function recvHttpRequest():HttpRequest {
         if (!_buffer.endsWith("\r\n\r\n")) {
             return null;
         }
-        
+
         var httpRequest = new HttpRequest();
         while (true) {
             var line = _buffer.readLine();
@@ -324,14 +324,14 @@ class WebSocketCommon {
                 break;
             }
             httpRequest.addLine(line);
-            
+
         }
-        
+
         Log.data(httpRequest.toString(), id);
-        
+
         return httpRequest;
     }
-    
+
     public function recvHttpResponse():HttpResponse {
         var response = _buffer.readLinesUntil("\r\n\r\n");
 
@@ -345,14 +345,14 @@ class WebSocketCommon {
                 break;
             }
             httpResponse.addLine(line);
-            
+
         }
-        
+
         Log.data(httpResponse.toString(), id);
-        
+
         return httpResponse;
     }
-    
+
     private inline function makeWSKey(key:String):String {
         return Base64.encode(Sha1.make(Bytes.ofString(key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
     }

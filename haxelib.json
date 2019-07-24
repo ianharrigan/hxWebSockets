@@ -1,12 +1,12 @@
 {
-	"name": "hxWebSockets",
-	"license": "MIT",
-	"tags": ["websockets"],
-	"description": "websockets for all haxe platforms",
-	"contributors": ["ianharrigan"],
-	"releasenote": "c# and java nio implementations",
-	"version": "1.2.0",
-	"url": "https://github.com/ianharrigan/hxWebSockets",
-	"dependencies": {
-	}
+    "name": "hxWebSockets",
+    "license": "MIT",
+    "tags": ["websockets"],
+    "description": "websockets for all haxe platforms",
+    "contributors": ["ianharrigan"],
+    "releasenote": "c# and java nio implementations",
+    "version": "1.2.0",
+    "url": "https://github.com/ianharrigan/hxWebSockets",
+    "dependencies": {
+    }
 }

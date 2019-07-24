@@ -1,17 +1,17 @@
 package hx.ws;
 
-#if js 
+#if js
 
 import haxe.Constraints.Function;
 import haxe.io.Bytes;
 
 class WebSocket { // lets use composition so we can intercept send / onmessage and convert to something haxey if its binary
     private var _ws:js.html.WebSocket = null;
-    
+
     public function new(url:String) {
         _ws = new js.html.WebSocket(url);
     }
-    
+
     public var onopen(get, set):Function;
     private function get_onopen():Function {
         return _ws.onopen;
@@ -20,7 +20,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         _ws.onopen = value;
         return value;
     }
-    
+
     public var onclose(get, set):Function;
     private function get_onclose():Function {
         return _ws.onclose;
@@ -29,7 +29,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         _ws.onclose = value;
         return value;
     }
-    
+
     public var onerror(get, set):Function;
     private function get_onerror():Function {
         return _ws.onerror;
@@ -38,7 +38,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         _ws.onerror = value;
         return value;
     }
-    
+
     private var _onmessage:Function = null;
     public var onmessage(get, set):Function;
     private function get_onmessage():Function {
@@ -65,8 +65,8 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         };
         return value;
     }
-    
-	public var binaryType(get, set):BinaryType;
+
+    public var binaryType(get, set):BinaryType;
     private function get_binaryType() {
         return _ws.binaryType;
     }
@@ -74,11 +74,11 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         _ws.binaryType = value;
         return value;
     }
-    
+
     public function close() {
         _ws.close();
     }
-    
+
     public function send(data:Any) {
         if (Std.is(data, Buffer)) {
             var buffer = cast(data, Buffer);
@@ -111,9 +111,9 @@ class WebSocket extends WebSocketCommon {
     private var _processThread:Thread;
     private var _key:String = "wskey";
     private var _encodedKey:String = "wskey";
-    
-	public var binaryType:BinaryType;
-    
+
+    public var binaryType:BinaryType;
+
     public function new(uri:String) {
         var uriRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
 
@@ -122,15 +122,15 @@ class WebSocket extends WebSocketCommon {
         var proto = uriRegExp.matched(1);
         if (proto == "wss") {
             #if (java || cs)
-            
+
             throw "Secure sockets not implemented";
-            
+
             #else
-            
+
             _port = 443;
             var s = new SecureSocketImpl();
             super(s);
-            
+
             #end
         } else if (proto == "ws") {
             _port = 80;
@@ -154,10 +154,10 @@ class WebSocket extends WebSocketCommon {
 
         _processThread = Thread.create(processThread);
         _processThread.sendMessage(this);
-        
+
         sendHandshake();
     }
-    
+
     private function processThread() {
         var ws:WebSocket = Thread.readMessage(true);
         Log.debug("Thread started", ws.id);
@@ -167,7 +167,7 @@ class WebSocket extends WebSocketCommon {
         }
         Log.debug("Thread ended", ws.id);
     }
-    
+
     public function sendHandshake() {
         var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
@@ -184,10 +184,10 @@ class WebSocket extends WebSocketCommon {
         httpRequest.headers.set(HttpHeader.ORIGIN, _socket.host().host.toString() + ":" + _socket.host().port);
         _encodedKey = Base64.encode(Utf8Encoder.encode(_key));
         httpRequest.headers.set(HttpHeader.SEC_WEBSOCKET_KEY, _encodedKey);
-        
+
         sendHttpRequest(httpRequest);
     }
-    
+
     private override function handleData() {
         switch (state) {
             case State.Handshake:
@@ -195,15 +195,15 @@ class WebSocket extends WebSocketCommon {
                 if (httpResponse == null) {
                     return;
                 }
-                
+
                 handshake(httpResponse);
                 handleData();
             case _:
                 super.handleData();
         }
-                
+
     }
-    
+
     private function handshake(httpResponse:HttpResponse) {
         trace(httpResponse.toString());
         if (httpResponse.code != 101) {
@@ -213,7 +213,7 @@ class WebSocket extends WebSocketCommon {
             close();
             return;
         }
-        
+
         var secKey = httpResponse.headers.get(HttpHeader.SEC_WEBSOSCKET_ACCEPT);
         if (secKey != makeWSKey(_encodedKey)) {
             if (onerror != null) {

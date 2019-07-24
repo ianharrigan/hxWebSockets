@@ -63,7 +63,7 @@ class Buffer {
 
     public function readUntil(delimiter:String):Bytes {
         var dl = delimiter.length;
-        
+
         for (i in 0 ... available - dl) {
             var matched = true;
             for (j in 0 ... dl) {

@@ -7,28 +7,28 @@ import js.html.WebSocket;
 class TestClient {
     private static var nextId:Int = 0;
     public var id:Int = 0;
-    
+
     private var _info:DivElement;
     private var _send:TextAreaElement;
     private var _recv:TextAreaElement;
     private var _log:TextAreaElement;
-    
+
     private var _ws:WebSocket;
-    
+
     public function new() {
         id = ++nextId;
-        
+
         _info = Browser.document.createDivElement();
         Browser.document.body.appendChild(_info);
 
-        
+
         var button = Browser.document.createButtonElement();
         button.innerText = "Connect";
         button.onclick = function(e) {
             connnect();
         }
         Browser.document.body.appendChild(button);
-        
+
         var button = Browser.document.createButtonElement();
         button.innerText = "Disconnect";
         button.onclick = function(e) {
@@ -36,15 +36,15 @@ class TestClient {
             _ws = null;
         }
         Browser.document.body.appendChild(button);
-        
+
         Browser.document.body.appendChild(Browser.document.createBRElement());
-        
+
         _send = Browser.document.createTextAreaElement();
         _send.value = "from client " + id;
         _send.style.width = "200px";
         _send.style.height = "100px";
         Browser.document.body.appendChild(_send);
-        
+
         _recv = Browser.document.createTextAreaElement();
         _recv.style.width = "200px";
         _recv.style.height = "100px";
@@ -63,18 +63,18 @@ class TestClient {
             sendString(_send.value);
         }
         Browser.document.body.appendChild(button);
-        
+
         var hr = Browser.document.createHRElement();
         Browser.document.body.appendChild(hr);
-        
+
         log("ready");
         init();
         updateInfo();
     }
-    
+
     public function init() {
     }
-    
+
     public function connnect() {
         log("connecting");
         try {
@@ -91,7 +91,7 @@ class TestClient {
                 _ws = null;
                 log("disconnected");
                 updateInfo();
-            };  
+            };
             _ws.onerror = function(err) {
                 log("error: " + err.toString());
             }
@@ -99,7 +99,7 @@ class TestClient {
             log("Exception: " + err);
         }
     }
-    
+
     public function sendString(s:String) {
         log("sending string: len = " + s.length);
         if (_ws == null) {
@@ -108,7 +108,7 @@ class TestClient {
         }
         _ws.send(s);
     }
-    
+
     public function updateInfo() {
         var info = "Client " + id;
         if (_ws != null) {
@@ -118,7 +118,7 @@ class TestClient {
         }
         _info.innerHTML = info;
     }
-    
+
     private function log(data:String) {
         _log.value += data + "\r\n";
         _log.scrollTop = _log.scrollHeight;

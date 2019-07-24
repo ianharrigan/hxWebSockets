@@ -4,12 +4,12 @@ class HttpResponse {
     public var httpVersion:String = "HTTP/1.1";
     public var code:Int = -1;
     public var text:String = "";
-    
+
     public var headers:Map<String, String> = new Map<String, String>();
-    
+
     public function new() {
     }
-    
+
     public function addLine(line:String) {
         if (code == -1) {
             var parts = line.split(" ");
@@ -23,10 +23,10 @@ class HttpResponse {
             headers.set(StringTools.trim(name), StringTools.trim(value));
         }
     }
-    
+
     public function build():String {
         var sb:StringBuf = new StringBuf();
-        
+
         sb.add(httpVersion);
         sb.add(" ");
         sb.add(code);
@@ -35,18 +35,18 @@ class HttpResponse {
             sb.add(text);
         }
         sb.add("\r\n");
-        
+
         for (header in headers.keys()) {
             sb.add(header);
             sb.add(": ");
             sb.add(headers.get(header));
             sb.add("\r\n");
         }
-        
+
         sb.add("\r\n");
         return sb.toString();
     }
-    
+
     public function toString():String {
         return build();
     }

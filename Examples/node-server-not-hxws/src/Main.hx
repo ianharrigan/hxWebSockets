@@ -7,7 +7,7 @@ import js.Node;
 // sockets are behaving correctly
 // based on: https://medium.com/@martin.sikora/node-js-websocket-simple-chat-tutorial-2def3a841b61
 class Main {
-	static function main() {
+    static function main() {
         //var WebSocketServer:Dynamic = Node.require("websocket").server;
         var http = Node.require('http');
 
@@ -17,12 +17,12 @@ class Main {
         });
         server.listen(5000, function() { });
         trace("server started on port 5000");
-        
+
         // create the server
         var wsServer = new WebSocketServer({
           httpServer: server
         });
-        
+
         // WebSocket server
         wsServer.on('request', function(request) {
           trace("GOT CONNECTION");
