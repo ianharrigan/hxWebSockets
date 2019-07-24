@@ -121,9 +121,17 @@ class WebSocket extends WebSocketCommon {
 
         var proto = uriRegExp.matched(1);
         if (proto == "wss") {
+            #if java
+            
+            throw "Secure sockets not implemented";
+            
+            #else
+            
             _port = 443;
             var s = new SecureSocketImpl();
             super(s);
+            
+            #end
         } else if (proto == "ws") {
             _port = 80;
             super();
