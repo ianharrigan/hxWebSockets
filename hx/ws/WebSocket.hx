@@ -137,6 +137,9 @@ class WebSocket extends WebSocketCommon {
             _port = parsedPort;
         }
         _uri = uriRegExp.matched(5);
+        if (_uri == null) {
+            _uri = "/";
+        }
         _socket.setBlocking(true);
         _socket.connect(new sys.net.Host(_host), _port);
         _socket.setBlocking(false);

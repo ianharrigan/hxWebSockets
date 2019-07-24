@@ -63,16 +63,19 @@ class Buffer {
 
     public function readUntil(delimiter:String):Bytes {
         var dl = delimiter.length;
-
-        for (i in 0 ... available-dl) {
+        
+        for (i in 0 ... available - dl) {
             var matched = true;
             for (j in 0 ... dl) {
-                if (peekByte(i+j) == delimiter.charCodeAt(j)) continue;
+                if (peekByte(currentOffset + i + j + 1) == delimiter.charCodeAt(j)) {
+                    continue;
+                }
                 matched = false;
+                break;
             }
 
             if (matched) {
-                var bytes = readBytes(i+dl);
+                var bytes = readBytes(i + dl + 1);
                 return bytes;
             }
         }
