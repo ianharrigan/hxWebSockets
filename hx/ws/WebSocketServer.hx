@@ -1,6 +1,7 @@
 package hx.ws;
 
 import haxe.Constraints;
+import haxe.MainLoop;
 import haxe.io.Error;
 
 @:generic
@@ -20,6 +21,8 @@ class WebSocketServer
     
     private var _stopServer:Bool = false;
     
+    public var sleepAmount:Float = 0.01;
+    
     public function new(host:String, port:Int, maxConnections:Int = 1) {
         _host = host;
         _port = port;
@@ -35,47 +38,62 @@ class WebSocketServer
         _serverSocket.listen(_maxConnections);
         Log.info('Starting server - ${_host}:${_port} (maxConnections: ${_maxConnections})');
         
+        /*
         while (true) {
-            if (_stopServer == true) {
-                for (h in _handlers) {
-                    h.close();
-                }
-                _handlers = [];
-                try {
-                    _serverSocket.close();
-                } catch (e:Dynamic) { }
+            var continueLoop = tick();
+            if (continueLoop == false) {
                 break;
             }
             
-            try {
-                var clientSocket:SocketImpl = _serverSocket.accept();
-                var handler = new T(clientSocket);
-                _handlers.push(handler);
-                Log.debug("Adding to web server handler to list - total: " + _handlers.length, handler.id);
-            } catch (e:Dynamic) {
-                if (e != 'Blocking' && e != Error.Blocked) {
-                    throw(e);
-                }
-            }
-            
-            for (h in _handlers) {
-                h.handle();
-            }
-            
-            var toRemove = [];
-            for (h in _handlers) {
-                if (h.state == State.Closed) {
-                    toRemove.push(h);
-                }
-            }
-            
-            for (h in toRemove) {
-                _handlers.remove(h);
-                Log.debug("Removing web server handler from list - total: " + _handlers.length, h.id);
-            }
-            
-            Sys.sleep(0.01);
+            Sys.sleep(sleepAmount);
         }
+        */
+        MainLoop.add(function() {
+            tick();
+            Sys.sleep(sleepAmount);
+        });
+    }
+    
+    public function tick() {
+        if (_stopServer == true) {
+            for (h in _handlers) {
+                h.close();
+            }
+            _handlers = [];
+            try {
+                _serverSocket.close();
+            } catch (e:Dynamic) { }
+            return false;
+        }
+        
+        try {
+            var clientSocket:SocketImpl = _serverSocket.accept();
+            var handler = new T(clientSocket);
+            _handlers.push(handler);
+            Log.debug("Adding to web server handler to list - total: " + _handlers.length, handler.id);
+        } catch (e:Dynamic) {
+            if (e != 'Blocking' && e != Error.Blocked) {
+                throw(e);
+            }
+        }
+        
+        for (h in _handlers) {
+            h.handle();
+        }
+        
+        var toRemove = [];
+        for (h in _handlers) {
+            if (h.state == State.Closed) {
+                toRemove.push(h);
+            }
+        }
+        
+        for (h in toRemove) {
+            _handlers.remove(h);
+            Log.debug("Removing web server handler from list - total: " + _handlers.length, h.id);
+        }
+        
+        return true;
     }
     
     public function stop() {
