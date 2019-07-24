@@ -230,8 +230,9 @@ class WebSocketCommon {
         var needClose = false;
         var result = null;
         try {
-            result = sys.net.Socket.select([_socket], null, null, 0.01);
+            result = SocketImpl.select([_socket], null, null, 0.01);
         } catch (e:Dynamic) {
+            Log.debug("Error selecting socket: " + e);
             needClose = true;
         }
         
