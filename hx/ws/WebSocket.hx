@@ -145,7 +145,7 @@ class WebSocket extends WebSocketCommon {
             _port = parsedPort;
         }
         _uri = uriRegExp.matched(5);
-        if (_uri == null) {
+        if (_uri == null || _uri.length == 0) {
             _uri = "/";
         }
         _socket.setBlocking(true);
@@ -171,7 +171,7 @@ class WebSocket extends WebSocketCommon {
     public function sendHandshake() {
         var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
-        httpRequest.uri = _uri.length > 0 ? _uri : "/";
+        httpRequest.uri = _uri;
         httpRequest.httpVersion = "HTTP/1.1";
 
         httpRequest.headers.set(HttpHeader.HOST, _host + ":" + _port);
