@@ -215,7 +215,7 @@ class WebSocket extends WebSocketCommon {
         }
 
         var secKey = httpResponse.headers.get(HttpHeader.SEC_WEBSOSCKET_ACCEPT);
-        if (secKey != makeWSKey(_encodedKey)) {
+        if (secKey != makeWSKeyResponse(_encodedKey)) {
             if (onerror != null) {
                 onerror("Error during WebSocket handshake: Incorrect 'Sec-WebSocket-Accept' header value");
             }
