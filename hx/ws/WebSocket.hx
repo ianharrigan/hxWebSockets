@@ -109,7 +109,6 @@ class WebSocket extends WebSocketCommon {
     public var _uri:String;
 
     private var _processThread:Thread;
-    private var _key:String = "wskey";
     private var _encodedKey:String = "wskey";
 
     public var binaryType:BinaryType;
@@ -182,7 +181,8 @@ class WebSocket extends WebSocketCommon {
         httpRequest.headers.set(HttpHeader.PRAGMA, "no-cache");
         httpRequest.headers.set(HttpHeader.CACHE_CONTROL, "no-cache");
         httpRequest.headers.set(HttpHeader.ORIGIN, _socket.host().host.toString() + ":" + _socket.host().port);
-        _encodedKey = Base64.encode(Utf8Encoder.encode(_key));
+
+        _encodedKey = generateWSKey();
         httpRequest.headers.set(HttpHeader.SEC_WEBSOCKET_KEY, _encodedKey);
 
         sendHttpRequest(httpRequest);
@@ -215,7 +215,7 @@ class WebSocket extends WebSocketCommon {
         }
 
         var secKey = httpResponse.headers.get(HttpHeader.SEC_WEBSOSCKET_ACCEPT);
-        if (secKey != makeWSKey(_encodedKey)) {
+        if (secKey != makeWSKeyResponse(_encodedKey)) {
             if (onerror != null) {
                 onerror("Error during WebSocket handshake: Incorrect 'Sec-WebSocket-Accept' header value");
             }
@@ -225,6 +225,14 @@ class WebSocket extends WebSocketCommon {
 
         _onopenCalled = false;
         state = State.Head;
+    }
+
+    private function generateWSKey():String {
+        var b = Bytes.alloc(16);
+        for (i in 0...16) {
+            b.set(i, Std.random(255));
+        }
+        return Base64.encode(b);
     }
 }
 

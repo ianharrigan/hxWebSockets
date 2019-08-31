@@ -51,7 +51,7 @@ class WebSocketHandler extends Handler {
         } else {
             Log.debug('Handshaking', id);
             var key = httpRequest.headers.get(HttpHeader.SEC_WEBSOCKET_KEY);
-            var result = makeWSKey(key);
+            var result = makeWSKeyResponse(key);
             Log.debug('Handshaking key - ${result}', id);
 
             httpResponse.code = 101;
