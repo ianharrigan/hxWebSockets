@@ -7,15 +7,21 @@ class Log {
 
     public static var mask:Int = 0;
 
+    #if sys
+    public static var logFn:Dynamic->Void = Sys.println;
+    #elseif js
+    public static var logFn:Dynamic->Void = js.html.Console.log;
+    #end
+    
     public static function info(data:String, id:Null<Int> = null) {
         if (mask & INFO != INFO) {
             return;
         }
 
         if (id != null) {
-            Sys.println('INFO  :: ID-${id} :: ${data}');
+            logFn('INFO  :: ID-${id} :: ${data}');
         } else {
-            Sys.println('INFO  :: ${data}');
+            logFn('INFO  :: ${data}');
         }
     }
 
@@ -25,9 +31,9 @@ class Log {
         }
 
         if (id != null) {
-            Sys.println('DEBUG :: ID-${id} :: ${data}');
+            logFn('DEBUG :: ID-${id} :: ${data}');
         } else {
-            Sys.println('DEBUG :: ${data}');
+            logFn('DEBUG :: ${data}');
         }
     }
 
@@ -37,9 +43,9 @@ class Log {
         }
 
         if (id != null) {
-            Sys.println('DATA  :: ID-${id}\n------------------------------\n${data}\n------------------------------');
+            logFn('DATA  :: ID-${id}\n------------------------------\n${data}\n------------------------------');
         } else {
-            Sys.println('${data}');
+            logFn('${data}');
         }
     }
 }

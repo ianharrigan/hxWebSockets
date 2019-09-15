@@ -4,7 +4,7 @@ import sys.net.Socket;
 import cs.system.net.sockets.Socket in NativeSocket;
 import cs.system.net.sockets.NetworkStream;
 import cs.system.net.sockets.SocketAsyncEventArgs;
-
+ 
 class NonBlockingSocket extends Socket {
     private var _acceptedSockets:Array<NativeSocket> = [];
     private var _socketAsyncEventArgs:SocketAsyncEventArgs = null;
