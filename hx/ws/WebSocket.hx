@@ -6,9 +6,21 @@ import haxe.Constraints.Function;
 import haxe.io.Bytes;
 
 class WebSocket { // lets use composition so we can intercept send / onmessage and convert to something haxey if its binary
+    private var _url:String;
     private var _ws:js.html.WebSocket = null;
 
-    public function new(url:String) {
+    public function new(url:String, immediateOpen=true) {
+        _url = url;
+        if (immediateOpen) {
+            open();
+        }
+    }
+
+    public function open()
+    {
+        if (_ws != null) {
+            throw "Socket already connected";
+        }
         _ws = new js.html.WebSocket(url);
     }
 
@@ -113,7 +125,7 @@ class WebSocket extends WebSocketCommon {
 
     public var binaryType:BinaryType;
 
-    public function new(uri:String) {
+    public function new(uri:String, immediateOpen=true) {
         var uriRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
 
         if ( ! uriRegExp.match(uri)) throw 'Uri not matching websocket uri "${uri}"';
@@ -146,6 +158,18 @@ class WebSocket extends WebSocketCommon {
         _uri = uriRegExp.matched(5);
         if (_uri == null || _uri.length == 0) {
             _uri = "/";
+        }
+
+        if (immediateOpen) {
+            open();
+        }
+    }
+
+
+    public function open()
+    {
+        if (state != State.Handshake) {
+            throw "Socket already connected";
         }
         _socket.setBlocking(true);
         _socket.connect(new sys.net.Host(_host), _port);
