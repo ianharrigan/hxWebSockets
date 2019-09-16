@@ -1,12 +1,15 @@
 {
-    "name": "hxWebSockets",
+    "version": "1.3.0",
+    "contributors": [
+        "ianharrigan"
+    ],
+    "dependencies": {},
+    "releasenote": "Ability to create nodejs servers",
+    "tags": [
+        "websockets"
+    ],
     "license": "MIT",
-    "tags": ["websockets"],
+    "name": "hxWebSockets",
     "description": "websockets for all haxe platforms",
-    "contributors": ["ianharrigan"],
-    "releasenote": "c# and java nio implementations",
-    "version": "1.2.0",
-    "url": "https://github.com/ianharrigan/hxWebSockets",
-    "dependencies": {
-    }
+    "url": "https://github.com/ianharrigan/hxWebSockets"
 }
