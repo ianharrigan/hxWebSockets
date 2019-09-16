@@ -23,6 +23,9 @@ class WebSocketServer
 
     public var sleepAmount:Float = 0.01;
 
+    public var onClientAdded:T->Void = null;
+    public var onClientRemoved:T->Void = null;
+    
     public function new(host:String, port:Int, maxConnections:Int = 1) {
         _host = host;
         _port = port;
@@ -76,6 +79,9 @@ class WebSocketServer
             var handler = new T(clientSocket);
             _handlers.push(handler);
             Log.debug("Adding to web server handler to list - total: " + _handlers.length, handler.id);
+            if (onClientAdded != null) {
+                onClientAdded(handler);
+            }
         } catch (e:Dynamic) {
             if (e != 'Blocking' && e != Error.Blocked) {
                 throw(e);
@@ -96,6 +102,9 @@ class WebSocketServer
         for (h in toRemove) {
             _handlers.remove(h);
             Log.debug("Removing web server handler from list - total: " + _handlers.length, h.id);
+            if (onClientRemoved != null) {
+                onClientRemoved(h);
+            }
         }
 
         return true;
