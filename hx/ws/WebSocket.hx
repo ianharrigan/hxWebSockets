@@ -244,7 +244,6 @@ class WebSocket extends WebSocketCommon {
     }
 
     private function handshake(httpResponse:HttpResponse) {
-        trace(httpResponse.toString());
         if (httpResponse.code != 101) {
             if (onerror != null) {
                 onerror(httpResponse.headers.get(HttpHeader.X_WEBSOCKET_REJECT_REASON));
