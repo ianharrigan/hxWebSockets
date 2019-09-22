@@ -125,6 +125,8 @@ class WebSocket extends WebSocketCommon {
 
     public var binaryType:BinaryType;
 
+    public var additionalHeaders(get, null):Map<String, String>;
+
     public function new(uri:String, immediateOpen=true) {
         var uriRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
 
@@ -191,6 +193,13 @@ class WebSocket extends WebSocketCommon {
         Log.debug("Thread ended", ws.id);
     }
 
+    function get_additionalHeaders() {
+        if (additionalHeaders == null) {
+            additionalHeaders = new Map<String, String>();
+        }
+        return additionalHeaders;
+    }
+
     public function sendHandshake() {
         var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
@@ -208,6 +217,12 @@ class WebSocket extends WebSocketCommon {
 
         _encodedKey = generateWSKey();
         httpRequest.headers.set(HttpHeader.SEC_WEBSOCKET_KEY, _encodedKey);
+
+        if (additionalHeaders != null) {
+            for ( k in additionalHeaders.keys()) {
+                httpRequest.headers.set(k, additionalHeaders[k]);
+            }
+        }
 
         sendHttpRequest(httpRequest);
     }
