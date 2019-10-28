@@ -36,14 +36,18 @@ class HttpResponse {
         }
         sb.add("\r\n");
 
+        var hasHeaders = false;
         for (header in headers.keys()) {
+            hasHeaders = true;
             sb.add(header);
             sb.add(": ");
             sb.add(headers.get(header));
             sb.add("\r\n");
         }
 
-        sb.add("\r\n");
+        if (hasHeaders == false) {
+            sb.add("\r\n");
+        }
         return sb.toString();
     }
 
