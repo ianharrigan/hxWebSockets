@@ -43,7 +43,7 @@ class WebSocketHandler extends Handler {
             httpResponse.text = "Upgrade";
             httpResponse.headers.set(HttpHeader.CONNECTION, "close");
             httpResponse.headers.set(HttpHeader.X_WEBSOCKET_REJECT_REASON, 'Unsupported upgrade header: ${httpRequest.headers.get(HttpHeader.UPGRADE)}.');
-        } else if (httpRequest.headers.get(HttpHeader.CONNECTION) != "Upgrade") {
+        } else if (httpRequest.headers.get(HttpHeader.CONNECTION).indexOf("Upgrade") == -1) {
             httpResponse.code = 426;
             httpResponse.text = "Upgrade";
             httpResponse.headers.set(HttpHeader.CONNECTION, "close");
