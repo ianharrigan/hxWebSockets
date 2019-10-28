@@ -4,7 +4,8 @@ class HttpResponse {
     public var httpVersion:String = "HTTP/1.1";
     public var code:Int = -1;
     public var text:String = "";
-
+    public var responseDataString:String = null;
+    
     public var headers:Map<String, String> = new Map<String, String>();
 
     public function new() {
@@ -25,6 +26,13 @@ class HttpResponse {
     }
 
     public function build():String {
+        var contentLength = 0;
+        if (responseDataString != null && responseDataString.length > 0) {
+            contentLength = responseDataString.length;
+        }
+        headers.set("Content-Length", Std.string(contentLength));
+        
+        
         var sb:StringBuf = new StringBuf();
 
         sb.add(httpVersion);
@@ -36,18 +44,19 @@ class HttpResponse {
         }
         sb.add("\r\n");
 
-        var hasHeaders = false;
         for (header in headers.keys()) {
-            hasHeaders = true;
             sb.add(header);
             sb.add(": ");
             sb.add(headers.get(header));
             sb.add("\r\n");
         }
 
-        if (hasHeaders == false) {
-            sb.add("\r\n");
+        sb.add("\r\n");
+        
+        if (responseDataString != null && responseDataString.length > 0) {
+            sb.add(responseDataString);
         }
+        
         return sb.toString();
     }
 
