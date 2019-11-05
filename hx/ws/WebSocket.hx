@@ -168,31 +168,46 @@ class WebSocket extends WebSocketCommon {
     }
 
 
-    public function open()
-    {
+    public function open() {
         if (state != State.Handshake) {
             throw "Socket already connected";
         }
         _socket.setBlocking(true);
         _socket.connect(new sys.net.Host(_host), _port);
         _socket.setBlocking(false);
-
+        
+        #if !cs
+        
         _processThread = Thread.create(processThread);
         _processThread.sendMessage(this);
+        
+        #else
+        
+        haxe.MainLoop.addThread(function() {
+            Log.debug("Thread started", this.id);
+            processLoop(this);
+            Log.debug("Thread ended", this.id);
+        });
+        
+        #end
 
         sendHandshake();
     }
 
     private function processThread() {
-        var ws:WebSocket = Thread.readMessage(true);
         Log.debug("Thread started", ws.id);
+        var ws:WebSocket = Thread.readMessage(true);
+        processLoop(ws);
+        Log.debug("Thread ended", ws.id);
+    }
+
+    private function processLoop(ws:WebSocket) {
         while (ws.state != State.Closed) { // TODO: should think about mutex
             ws.process();
             Sys.sleep(.01);
         }
-        Log.debug("Thread ended", ws.id);
     }
-
+    
     function get_additionalHeaders() {
         if (additionalHeaders == null) {
             additionalHeaders = new Map<String, String>();
