@@ -1,14 +1,14 @@
 {
-    "version": "1.3.2",
     "contributors": [
         "ianharrigan"
     ],
-    "dependencies": {},
-    "releasenote": "FF fix and better httpResponse",
+    "version": "1.3.3",
+    "license": "MIT",
     "tags": [
         "websockets"
     ],
-    "license": "MIT",
+    "releasenote": "ios / c# fix",
+    "dependencies": {},
     "name": "hxWebSockets",
     "description": "websockets for all haxe platforms",
     "url": "https://github.com/ianharrigan/hxWebSockets"
