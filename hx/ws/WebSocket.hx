@@ -194,10 +194,10 @@ class WebSocket extends WebSocketCommon {
     }
 
     private function processThread() {
-        Log.debug("Thread started", ws.id);
+        Log.debug("Thread started", this.id);
         var ws:WebSocket = Thread.readMessage(true);
-        processLoop(ws);
-        Log.debug("Thread ended", ws.id);
+        processLoop(this);
+        Log.debug("Thread ended", this.id);
     }
 
     private function processLoop(ws:WebSocket) {
