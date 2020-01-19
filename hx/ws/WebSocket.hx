@@ -5,6 +5,12 @@ package hx.ws;
 import haxe.Constraints.Function;
 import haxe.io.Bytes;
 
+#if (haxe_ver < 4)
+    typedef JsBuffer = js.html.ArrayBuffer;
+#else
+    typedef JsBuffer = js.lib.ArrayBuffer;
+#end
+
 class WebSocket { // lets use composition so we can intercept send / onmessage and convert to something haxey if its binary
     private var _url:String;
     private var _ws:js.html.WebSocket = null;
@@ -59,7 +65,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         _onmessage = value;
         _ws.onmessage = function(message) {
             if (_onmessage != null) {
-                if (Std.is(message.data, js.html.ArrayBuffer)) {
+                if (Std.is(message.data, JsBuffer)) {
                     var buffer = new Buffer();
                     buffer.writeBytes(Bytes.ofData(message.data));
                     _onmessage({
