@@ -10,6 +10,8 @@ class WebSocketCommon {
     public var id:Int;
     public var state:State = State.Handshake;
 
+    public var isClient = true;
+
     private var _socket:SocketImpl;
 
     private var _onopenCalled:Null<Bool> = null;
@@ -173,7 +175,7 @@ class WebSocketCommon {
 
     private function prepareFrame(data:Bytes, type:OpCode, isFinal:Bool):Bytes {
         var out = new Buffer();
-        var isMasked = false; // All clientes messages must be masked: http://tools.ietf.org/html/rfc6455#section-5.1
+        var isMasked = isClient; // All clientes messages must be masked: http://tools.ietf.org/html/rfc6455#section-5.1
         var mask = generateMask();
         var sizeMask = (isMasked ? 0x80 : 0x00);
 
