@@ -14,7 +14,7 @@ class WebSocketCommon {
 
     private var _socket:SocketImpl;
 
-    private var _onopenCalled:Null<Bool> = null;
+    private var _onopenCalled:Bool = false;
     private var _lastError:Dynamic = null;
 
     public var onopen:Void->Void;
