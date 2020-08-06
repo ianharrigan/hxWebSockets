@@ -1,0 +1,5 @@
+-cp src
+--main
+-lib hxnodejs
+-lib hxWebSockets
+-js bin\node-server-not-hxws.js"
