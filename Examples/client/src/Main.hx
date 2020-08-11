@@ -1,5 +1,6 @@
 package;
 
+import haxe.io.Bytes;
 import hx.ws.Log;
 import hx.ws.WebSocket;
 
@@ -9,9 +10,12 @@ class Main {
         var ws = new WebSocket("ws://localhost:5000");
 
         ws.onopen = function() {
-            ws.send("bob");
+            ws.send("alice string");
+            ws.send(Bytes.ofString("alice bytes"));
         }
 
+        #if sys
         Sys.getChar(true);
+        #end
     }
 }

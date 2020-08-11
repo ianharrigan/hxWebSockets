@@ -1,0 +1,4 @@
+-cp src
+--main Main
+-lib hxWebSockets
+-hl bin/hl/Main.hl

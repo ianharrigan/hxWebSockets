@@ -2,9 +2,10 @@ package;
 
 import hx.ws.SocketImpl;
 import hx.ws.WebSocketHandler;
+import hx.ws.Types;
 
 class MyHandler extends WebSocketHandler {
-    public function new(s:SocketImpl) {
+    public function new(s: SocketImpl) {
         super(s);
         onopen = function() {
             trace(id + ". OPEN");
@@ -12,12 +13,16 @@ class MyHandler extends WebSocketHandler {
         onclose = function() {
             trace(id + ". CLOSE");
         }
-        onmessage = function(message) {
-            trace(id + ". DATA: " + message.data.length + ", " + message.type);
-            if (message.type == "text") {
-                send("echo: " + message.data);
-            } else {
-                send(message.data);
+        onmessage = function(message: MessageType) {
+            switch (message) {
+                case BytesMessage(content):
+                    var str = "echo: " + content.readAllAvailableBytes();
+                    trace(str);
+                    send(str);
+                case StrMessage(content):
+                    var str = "echo: " + content;
+                    trace(str);
+                    send(str);
             }
         }
         onerror = function(error) {
