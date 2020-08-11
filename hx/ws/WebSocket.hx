@@ -1,5 +1,7 @@
 package hx.ws;
 
+import hx.ws.Types;
+
 #if js
 
 import haxe.Constraints.Function;
@@ -63,20 +65,14 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
     }
     private function set_onmessage(value:Function):Function {
         _onmessage = value;
-        _ws.onmessage = function(message) {
+        _ws.onmessage = function(message: Dynamic) {
             if (_onmessage != null) {
                 if (Std.is(message.data, JsBuffer)) {
                     var buffer = new Buffer();
                     buffer.writeBytes(Bytes.ofData(message.data));
-                    _onmessage({
-                        type: "binary",
-                        data: buffer
-                    });
+                    _onmessage(BytesMessage(buffer));
                 } else {
-                    _onmessage({
-                        type: "text",
-                        data: message.data
-                    });
+                    _onmessage(StrMessage(message));
                 }
             }
         };
@@ -180,20 +176,20 @@ class WebSocket extends WebSocketCommon {
         _socket.setBlocking(true);
         _socket.connect(new sys.net.Host(_host), _port);
         _socket.setBlocking(false);
-        
+
         #if !cs
-        
+
         _processThread = Thread.create(processThread);
         _processThread.sendMessage(this);
-        
+
         #else
-        
+
         haxe.MainLoop.addThread(function() {
             Log.debug("Thread started", this.id);
             processLoop(this);
             Log.debug("Thread ended", this.id);
         });
-        
+
         #end
 
         sendHandshake();
@@ -212,7 +208,7 @@ class WebSocket extends WebSocketCommon {
             Sys.sleep(.01);
         }
     }
-    
+
     function get_additionalHeaders() {
         if (additionalHeaders == null) {
             additionalHeaders = new Map<String, String>();
