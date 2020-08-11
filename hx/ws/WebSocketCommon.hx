@@ -1,5 +1,6 @@
 package hx.ws;
 
+import hx.ws.Types.MessageType;
 import haxe.crypto.Base64;
 import haxe.crypto.Sha1;
 import haxe.io.Bytes;
@@ -20,7 +21,7 @@ class WebSocketCommon {
     public var onopen:Void->Void;
     public var onclose:Void->Void;
     public var onerror:Dynamic->Void;
-    public var onmessage:Dynamic->Void;
+    public var onmessage:MessageType->Void;
 
     private var _buffer:Buffer = new Buffer();
 
@@ -112,19 +113,13 @@ class WebSocketCommon {
                                 if (this.onmessage != null) {
                                     var buffer = new Buffer();
                                     buffer.writeBytes(unmaskedMessageData);
-                                    this.onmessage({
-                                        type: "binary",
-                                        data: buffer
-                                    });
+                                    this.onmessage(BytesMessage(buffer));
                                 }
                             } else {
                                 var stringPayload = Utf8Encoder.decode(unmaskedMessageData);
                                 Log.data(stringPayload, id);
                                 if (this.onmessage != null) {
-                                    this.onmessage({
-                                        type: "text",
-                                        data: stringPayload
-                                    });
+                                    this.onmessage(StrMessage(stringPayload));
                                 }
                             }
                             _payload = null;
