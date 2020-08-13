@@ -25,7 +25,7 @@ class WebSocketServer
 
     public var onClientAdded:T->Void = null;
     public var onClientRemoved:T->Void = null;
-    
+
     public function new(host:String, port:Int, maxConnections:Int = 1) {
         _host = host;
         _port = port;
@@ -115,5 +115,9 @@ class WebSocketServer
 
     public function stop() {
         _stopServer = true;
+    }
+
+    public function totalHandlers(): Int {
+        return _handlers.length;
     }
 }
