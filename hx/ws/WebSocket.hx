@@ -72,7 +72,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
                     buffer.writeBytes(Bytes.ofData(message.data));
                     _onmessage(BytesMessage(buffer));
                 } else {
-                    _onmessage(StrMessage(message));
+                    _onmessage(StrMessage(message.data));
                 }
             }
         };
