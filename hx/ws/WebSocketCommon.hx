@@ -161,7 +161,7 @@ class WebSocketCommon {
             _socket.output.write(data);
             _socket.output.flush();
         } catch (e:Dynamic) {
-            Log.debug(e, id);
+            Log.debug(Std.string(e), id);
             if (onerror != null) {
                 onerror(Std.string(e));
             }
