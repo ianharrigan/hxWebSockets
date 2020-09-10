@@ -76,11 +76,14 @@ class WebSocketServer
 
         try {
             var clientSocket:SocketImpl = _serverSocket.accept();
-            var handler = new T(clientSocket);
-            _handlers.push(handler);
-            Log.debug("Adding to web server handler to list - total: " + _handlers.length, handler.id);
-            if (onClientAdded != null) {
-                onClientAdded(handler);
+            if (clientSocket != null) { // HL doesnt throw blocking, instead returns null
+                trace(clientSocket);
+                var handler = new T(clientSocket);
+                _handlers.push(handler);
+                Log.debug("Adding to web server handler to list - total: " + _handlers.length, handler.id);
+                if (onClientAdded != null) {
+                    onClientAdded(handler);
+                }
             }
         } catch (e:Dynamic) {
             if (e != 'Blocking' && e != Error.Blocked) {
