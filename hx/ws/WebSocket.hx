@@ -22,6 +22,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         if (immediateOpen) {
             open();
         }
+        set_binaryType(Types.BinaryType.ARRAYBUFFER);
     }
 
     public function open() {
@@ -103,7 +104,6 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
 }
 
 #elseif sys
-
 
 #if (haxe_ver >= 4)
 import sys.thread.Thread;
