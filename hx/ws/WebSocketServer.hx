@@ -13,14 +13,14 @@ class WebSocketServer
     #end
 
     private var _serverSocket:SocketImpl;
-    private var _handlers:Array<T> = [];
 
     private var _host:String;
     private var _port:Int;
     private var _maxConnections:Int;
 
-    private var _stopServer:Bool = false;
+    public var handlers:Array<T> = [];
 
+    private var _stopServer:Bool = false;
     public var sleepAmount:Float = 0.01;
 
     public var onClientAdded:T->Void = null;
@@ -64,10 +64,10 @@ class WebSocketServer
 
     public function tick() {
         if (_stopServer == true) {
-            for (h in _handlers) {
+            for (h in handlers) {
                 h.close();
             }
-            _handlers = [];
+            handlers = [];
             try {
                 _serverSocket.close();
             } catch (e:Dynamic) { }
@@ -91,20 +91,20 @@ class WebSocketServer
             }
         }
 
-        for (h in _handlers) {
+        for (h in handlers) {
             h.handle();
         }
 
         var toRemove = [];
-        for (h in _handlers) {
+        for (h in handlers) {
             if (h.state == State.Closed) {
                 toRemove.push(h);
             }
         }
 
         for (h in toRemove) {
-            _handlers.remove(h);
-            Log.debug("Removing web server handler from list - total: " + _handlers.length, h.id);
+            handlers.remove(h);
+            Log.debug("Removing web server handler from list - total: " + handlers.length, h.id);
             if (onClientRemoved != null) {
                 onClientRemoved(h);
             }
@@ -118,6 +118,6 @@ class WebSocketServer
     }
 
     public function totalHandlers(): Int {
-        return _handlers.length;
+        return handlers.length;
     }
 }
