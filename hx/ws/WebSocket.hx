@@ -22,6 +22,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         if (immediateOpen) {
             open();
         }
+        set_binaryType(Types.BinaryType.ARRAYBUFFER);
     }
 
     public function open() {
@@ -72,7 +73,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
                     buffer.writeBytes(Bytes.ofData(message.data));
                     _onmessage(BytesMessage(buffer));
                 } else {
-                    _onmessage(StrMessage(message));
+                    _onmessage(StrMessage(message.data));
                 }
             }
         };
@@ -92,18 +93,20 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         _ws.close();
     }
 
-    public function send(data:Any) {
-        if (Std.is(data, Buffer)) {
-            var buffer = cast(data, Buffer);
+    public function send(msg:Any) {
+        if (Std.is(msg, Bytes)) {
+            var bytes = cast(msg, Bytes);
+            _ws.send(bytes.getData());
+        } else if (Std.is(msg, Buffer)) {
+            var buffer = cast(msg, Buffer);
             _ws.send(buffer.readAllAvailableBytes().getData());
         } else {
-            _ws.send(data);
+            _ws.send(msg);
         }
     }
 }
 
 #elseif sys
-
 
 #if (haxe_ver >= 4)
 import sys.thread.Thread;
