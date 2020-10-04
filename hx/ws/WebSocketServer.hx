@@ -79,8 +79,8 @@ class WebSocketServer
             if (clientSocket != null) { // HL doesnt throw blocking, instead returns null
                 trace(clientSocket);
                 var handler = new T(clientSocket);
-                _handlers.push(handler);
-                Log.debug("Adding to web server handler to list - total: " + _handlers.length, handler.id);
+                handlers.push(handler);
+                Log.debug("Adding to web server handler to list - total: " + handlers.length, handler.id);
                 if (onClientAdded != null) {
                     onClientAdded(handler);
                 }
