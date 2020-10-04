@@ -77,7 +77,6 @@ class WebSocketServer
         try {
             var clientSocket:SocketImpl = _serverSocket.accept();
             if (clientSocket != null) { // HL doesnt throw blocking, instead returns null
-                trace(clientSocket);
                 var handler = new T(clientSocket);
                 handlers.push(handler);
                 Log.debug("Adding to web server handler to list - total: " + handlers.length, handler.id);
