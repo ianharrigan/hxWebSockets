@@ -1,14 +1,14 @@
 {
-    "version": "1.4.0",
     "contributors": [
         "ianharrigan"
     ],
-    "dependencies": {},
-    "releasenote": "Fixes and enhancements",
+    "version": "1.4.0",
+    "license": "MIT",
     "tags": [
         "websockets"
     ],
-    "license": "MIT",
+    "releasenote": "Fixes and enhancements",
+    "dependencies": {},
     "name": "hxWebSockets",
     "description": "websockets for all haxe platforms",
     "url": "https://github.com/ianharrigan/hxWebSockets"
