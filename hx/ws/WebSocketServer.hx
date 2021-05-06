@@ -32,10 +32,14 @@ class WebSocketServer
         _maxConnections = maxConnections;
     }
 
+    private function createSocket() {
+        return new SocketImpl();
+    }
+
     public function start() {
         _stopServer = false;
 
-        _serverSocket = new SocketImpl();
+        _serverSocket = createSocket();
         _serverSocket.setBlocking(false);
         _serverSocket.bind(new sys.net.Host(_host), _port);
         _serverSocket.listen(_maxConnections);
