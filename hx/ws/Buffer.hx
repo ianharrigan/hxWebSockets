@@ -156,6 +156,11 @@ class Buffer {
     public function endsWith(e:String):Bool {
         var i = available - e.length;
         var n = currentOffset;
+
+        if (i <= 0) {
+            return false;
+        }
+
         while (i < available) {
             if (peekByte(i) != e.charCodeAt(n)) {
                 return false;
