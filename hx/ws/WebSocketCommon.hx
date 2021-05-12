@@ -29,10 +29,11 @@ class WebSocketCommon {
         id = _nextId++;
         if (socket == null) {
             _socket = new SocketImpl();
-            _socket.setBlocking(false);
         } else {
             _socket = socket;
         }
+        _socket.setBlocking(false);
+        _socket.setTimeout(0);
     }
 
     public function send(data:Any) {
