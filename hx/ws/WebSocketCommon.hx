@@ -310,18 +310,18 @@ class WebSocketCommon {
     }
 
     public function recvHttpRequest():HttpRequest {
-        if (!_buffer.endsWith("\r\n\r\n")) {
+        var response = _buffer.readLinesUntil("\r\n\r\n");
+
+        if (response == null) {
             return null;
         }
 
         var httpRequest = new HttpRequest();
-        while (true) {
-            var line = _buffer.readLine();
+        for (line in response) {
             if (line == null || line == "") {
                 break;
             }
             httpRequest.addLine(line);
-
         }
 
         Log.data(httpRequest.toString(), id);
