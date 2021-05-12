@@ -66,6 +66,16 @@ class WebSocketServer
         #end
     }
 
+    private function handleNewSocket(socket) {
+        var handler = new T(socket);
+        handlers.push(handler);
+
+        Log.debug("Adding to web server handler to list - total: " + handlers.length, handler.id);
+        if (onClientAdded != null) {
+            onClientAdded(handler);
+        }
+    }
+
     public function tick() {
         if (_stopServer == true) {
             for (h in handlers) {
@@ -81,12 +91,7 @@ class WebSocketServer
         try {
             var clientSocket:SocketImpl = _serverSocket.accept();
             if (clientSocket != null) { // HL doesnt throw blocking, instead returns null
-                var handler = new T(clientSocket);
-                handlers.push(handler);
-                Log.debug("Adding to web server handler to list - total: " + handlers.length, handler.id);
-                if (onClientAdded != null) {
-                    onClientAdded(handler);
-                }
+                handleNewSocket(clientSocket);
             }
         } catch (e:Dynamic) {
             if (e != 'Blocking' && e != Error.Blocked) {
