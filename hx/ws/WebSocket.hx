@@ -25,11 +25,16 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         set_binaryType(Types.BinaryType.ARRAYBUFFER);
     }
 
+    private function createSocket()
+    {
+        return new js.html.WebSocket(_url);
+    }
+
     public function open() {
         if (_ws != null) {
             throw "Socket already connected";
         }
-        _ws = new js.html.WebSocket(_url);
+        _ws = createSocket();
     }
 
     public var onopen(get, set):Function;
@@ -120,9 +125,10 @@ import haxe.crypto.Base64;
 import haxe.io.Bytes;
 
 class WebSocket extends WebSocketCommon {
+    public var _protocol:String;
     public var _host:String;
-    public var _port:Int;
-    public var _uri:String;
+    public var _port:Int = 0;
+    public var _path:String;
 
     private var _processThread:Thread;
     private var _encodedKey:String = "wskey";
@@ -131,43 +137,57 @@ class WebSocket extends WebSocketCommon {
 
     public var additionalHeaders(get, null):Map<String, String>;
 
-    public function new(uri:String, immediateOpen=true) {
-        var uriRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
+    public function new(url:String, immediateOpen=true) {
+        parseUrl(url);
 
-        if ( ! uriRegExp.match(uri)) throw 'Uri not matching websocket uri "${uri}"';
-
-        var proto = uriRegExp.matched(1);
-        if (proto == "wss") {
-            #if (java || cs)
-
-            throw "Secure sockets not implemented";
-
-            #else
-
-            _port = 443;
-            var s = new SecureSocketImpl();
-            super(s);
-
-            #end
-        } else if (proto == "ws") {
-            _port = 80;
-            super();
-        } else {
-            throw 'Unknown protocol $proto';
-        }
-
-        _host = uriRegExp.matched(2);
-        var parsedPort = Std.parseInt(uriRegExp.matched(4));
-        if (parsedPort > 0 ) {
-            _port = parsedPort;
-        }
-        _uri = uriRegExp.matched(5);
-        if (_uri == null || _uri.length == 0) {
-            _uri = "/";
-        }
+        super(createSocket());
 
         if (immediateOpen) {
             open();
+        }
+    }
+
+    inline private function parseUrl(url)
+    {
+        var urlRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
+
+        if ( ! urlRegExp.match(url)) {
+            throw 'Uri not matching websocket URL "${url}"';
+        }
+
+        _protocol = urlRegExp.matched(1);
+
+        _host = urlRegExp.matched(2);
+
+        var parsedPort = Std.parseInt(urlRegExp.matched(4));
+        if (parsedPort > 0 ) {
+            _port = parsedPort;
+        }
+        _path = urlRegExp.matched(5);
+        if (_path == null || _path.length == 0) {
+            _path = "/";
+        }
+
+    }
+
+    private function createSocket():SocketImpl
+    {
+        if (_protocol == "wss") {
+            #if (java || cs)
+                throw "Secure sockets not implemented";
+            #else
+                if (_port == 0) {
+                    _port = 443;
+                }
+                return new SecureSocketImpl();
+            #end
+        } else if (_protocol == "ws") {
+            if (_port == 0) {
+                _port = 80;
+            }
+            return new SocketImpl();
+        } else {
+            throw 'Unknown protocol $_protocol';
         }
     }
 
@@ -222,7 +242,8 @@ class WebSocket extends WebSocketCommon {
     public function sendHandshake() {
         var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
-        httpRequest.uri = _uri;
+        // TODO: should propably be hostname+port+path?
+        httpRequest.uri = _path;
         httpRequest.httpVersion = "HTTP/1.1";
 
         httpRequest.headers.set(HttpHeader.HOST, _host + ":" + _port);

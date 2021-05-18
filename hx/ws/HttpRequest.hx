@@ -15,7 +15,7 @@ class HttpRequest {
             var parts = line.split(" ");
             method = parts[0];
             uri = parts[1];
-            httpVersion = parts[2];
+            httpVersion = StringTools.trim(parts[2]);
         } else {
             var n = line.indexOf(":");
             var name = line.substr(0, n);

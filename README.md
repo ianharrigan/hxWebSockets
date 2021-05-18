@@ -76,3 +76,72 @@ class MyHandler extends WebSocketHandler {
     }
 }
 ```
+
+### Secure server
+
+`Main.hx`
+```haxe
+package;
+
+import hx.ws.WebSocketSecureServer;
+
+import sys.ssl.Key;
+import sys.ssl.Certificate;
+
+
+class Main
+{
+
+    public static function main()
+    {
+        // self signed ceritificate
+        var cert = Certificate.loadFile('example.cert');
+        var key = Key.loadFile('example.key');
+
+        var server = new WebSocketSecureServer<SocketHandler>("0.0.0.0", 5000,
+            cert, // actual certificate
+            key,  // key to the certificate
+            cert, // certificate chain to aid clients finding way to trusted root,
+                  // pass cert in case of selfsigned
+            10);
+        server.start();
+    }
+}
+```
+
+Initialize client with `wss` protocol, e.g. `new WebSocket("wss://localhost:5000");`
+
+### Accepting selfsigned certs
+
+Only on sys platforms, since they expose SslSocket. If you need to test JS with selfsigned certs, you need to import certificate into your browser trusted collection.
+
+```haxe
+import hx.ws.Log;
+import hx.ws.WebSocket;
+
+import hx.ws.SocketImpl;
+import hx.ws.SecureSocketImpl;
+
+class WebSocketNoVerify extends WebSocket {
+    override private function createSocket():SocketImpl
+    {
+        if (_protocol == "wss") {
+            var socket:SecureSocketImpl = cast super.createSocket();
+            socket.verifyCert = false;
+            return socket;
+        }
+        return super.createSocket();
+    }
+}
+
+class Main {
+    static function main() {
+        Log.mask = Log.INFO | Log.DEBUG | Log.DATA;
+        var ws = new WebSocketNoVerify("wss://localhost:5000");
+        ws.onopen = function() {
+            ws.send("alice string");
+        }
+        Sys.getChar(true);
+    }
+}
+```

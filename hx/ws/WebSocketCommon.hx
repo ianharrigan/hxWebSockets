@@ -29,19 +29,20 @@ class WebSocketCommon {
         id = _nextId++;
         if (socket == null) {
             _socket = new SocketImpl();
-            _socket.setBlocking(false);
         } else {
             _socket = socket;
         }
+        _socket.setBlocking(false);
+        _socket.setTimeout(0);
     }
 
     public function send(data:Any) {
-        if (Std.is(data, String)) {
+        if (Std.isOfType(data, String)) {
             Log.data(data, id);
             sendFrame(Utf8Encoder.encode(data), OpCode.Text);
-        } else if (Std.is(data, Bytes)) {
+        } else if (Std.isOfType(data, Bytes)) {
             sendFrame(data, OpCode.Binary);
-        } else if (Std.is(data, Buffer)) {
+        } else if (Std.isOfType(data, Buffer)) {
             sendFrame(cast(data, Buffer).readAllAvailableBytes(), OpCode.Binary);
         }
     }
@@ -249,16 +250,16 @@ class WebSocketCommon {
                     #if cs
 
                     needClose = true;
-                    if (Std.is(e, cs.system.io.IOException)) {
+                    if (Std.isOfType(e, cs.system.io.IOException)) {
                         var ioex = cast(e, cs.system.io.IOException);
-                        if (Std.is(ioex.GetBaseException(), cs.system.net.sockets.SocketException)) {
+                        if (Std.isOfType(ioex.GetBaseException(), cs.system.net.sockets.SocketException)) {
                             var sockex = cast(ioex.GetBaseException(), cs.system.net.sockets.SocketException);
                             needClose = !(sockex.SocketErrorCode == cs.system.net.sockets.SocketError.WouldBlock);
                         }
                     }
                     #else
 
-                    needClose = !(e == 'Blocking' || (Std.is(e, Error) && (e:Error).match(Error.Blocked)));
+                    needClose = !(e == 'Blocking' || (Std.isOfType(e, Error) && (e:Error).match(Error.Blocked)));
 
                     #end
                 }
@@ -310,18 +311,18 @@ class WebSocketCommon {
     }
 
     public function recvHttpRequest():HttpRequest {
-        if (!_buffer.endsWith("\r\n\r\n")) {
+        var response = _buffer.readLinesUntil("\r\n\r\n");
+
+        if (response == null) {
             return null;
         }
 
         var httpRequest = new HttpRequest();
-        while (true) {
-            var line = _buffer.readLine();
+        for (line in response) {
             if (line == null || line == "") {
                 break;
             }
             httpRequest.addLine(line);
-
         }
 
         Log.data(httpRequest.toString(), id);
