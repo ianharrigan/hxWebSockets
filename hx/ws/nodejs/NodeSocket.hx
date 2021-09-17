@@ -45,7 +45,7 @@ class NodeSocket {
         
     }
     
-    public function listen(connections:Int):Void {
+    public function listen(connections:Int, ?callBack:Void -> Void):Void {
         if (_host == null) {
             throw "You must bind the Socket to an address!";
         }
@@ -55,7 +55,7 @@ class NodeSocket {
             host: _host.host,
             port: _port,
             backlog: connections
-        });
+        }, callBack);
     }
     
     private var _host:Host = null;
@@ -68,10 +68,14 @@ class NodeSocket {
     public function setBlocking(blocking:Bool) {
         
     }
+
+    public function setTimeout(value:Int) {
+        _socket.setTimeout(value);
+    }
     
-    public function close() {
+    public function close(?callBack:Void -> Void) {
         if (_server != null) {
-            _server.close();
+            _server.close(callBack);
         }
         if (_socket != null) {
             _socket.destroy();

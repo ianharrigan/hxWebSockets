@@ -1,5 +1,8 @@
+
+
 package hx.ws;
 
+import haxe.Timer;
 import haxe.Constraints;
 import haxe.MainLoop;
 import haxe.io.Error;
@@ -26,6 +29,8 @@ class WebSocketServer
     public var onClientAdded:T->Void = null;
     public var onClientRemoved:T->Void = null;
 
+    private var _stopCallBack:Void -> Void;
+
     public function new(host:String, port:Int, maxConnections:Int = 1) {
         _host = host;
         _port = port;
@@ -36,13 +41,13 @@ class WebSocketServer
         return new SocketImpl();
     }
 
-    public function start() {
+    public function start(?callBack:Void -> Void) {
         _stopServer = false;
 
         _serverSocket = createSocket();
         _serverSocket.setBlocking(false);
         _serverSocket.bind(new sys.net.Host(_host), _port);
-        _serverSocket.listen(_maxConnections);
+        _serverSocket.listen(_maxConnections, callBack);
         Log.info('Starting server - ${_host}:${_port} (maxConnections: ${_maxConnections})');
 
         #if cs
@@ -56,6 +61,10 @@ class WebSocketServer
             Sys.sleep(sleepAmount);
         }
 
+        #elseif nodejs
+
+        startTick();
+
         #else
 
         MainLoop.add(function() {
@@ -65,6 +74,15 @@ class WebSocketServer
 
         #end
     }
+
+    #if nodejs
+    private function startTick():Void
+    {
+        tick();
+
+        Timer.delay(startTick, 100);
+    }
+    #end
 
     private function handleNewSocket(socket) {
         var handler = new T(socket);
@@ -83,7 +101,7 @@ class WebSocketServer
             }
             handlers = [];
             try {
-                _serverSocket.close();
+                _serverSocket.close(_stopCallBack);
             } catch (e:Dynamic) { }
             return false;
         }
@@ -121,7 +139,8 @@ class WebSocketServer
         return true;
     }
 
-    public function stop() {
+    public function stop(?callBack:Void -> Void) {
+        _stopCallBack = callBack;
         _stopServer = true;
     }
 

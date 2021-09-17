@@ -40,7 +40,7 @@ class NioSocket {
         }
     }
 
-    public function close():Void {
+    public function close(?callBack:Void -> Void):Void {
         if (serverChannel != null) {
             server.close();
         }
