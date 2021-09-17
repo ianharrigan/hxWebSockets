@@ -78,9 +78,12 @@ class WebSocketServer
     #if nodejs
     private function startTick():Void
     {
-        tick();
+        var continueTick:Bool = tick();
 
-        Timer.delay(startTick, 100);
+        if (continueTick)
+        {
+            Timer.delay(startTick, 100);
+        }
     }
     #end
 
