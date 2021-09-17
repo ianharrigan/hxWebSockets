@@ -72,7 +72,7 @@ class NodeSocket {
     public function setTimeout(value:Int) {
         _socket.setTimeout(value);
     }
-    
+
     public function close(?callBack:Void -> Void) {
         if (_server != null) {
             _server.close(callBack);
