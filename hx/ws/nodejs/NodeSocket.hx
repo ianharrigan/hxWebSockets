@@ -17,14 +17,14 @@ class NodeSocket {
         input = new NodeSocketInput(this);
         output = new NodeSocketOutput(this);
     }
-
+    
     private var _server:Server = null;
     private function createServer():Void {
         if (_server == null) {
             _server = Net.createServer(acceptConnection);
         }
     }
-
+    
     private static var _connections:Array<NodeSocket> = [];
     private var _newConnections:Array<NodeSocket> = [];
     private function acceptConnection(socket:Socket) {
@@ -34,18 +34,18 @@ class NodeSocket {
         _connections.push(nodeSocket);
         _newConnections.push(nodeSocket);
     }
-
+    
     public function accept() {
         if (_newConnections.length == 0) {
             throw "Blocking";
         }
-
+        
         var socket = _newConnections.pop();
         return socket;
-
+        
     }
-
-    public function listen(connections:Int):Void {
+    
+    public function listen(connections:Int, ?callBack:Void -> Void):Void {
         if (_host == null) {
             throw "You must bind the Socket to an address!";
         }
@@ -55,32 +55,33 @@ class NodeSocket {
             host: _host.host,
             port: _port,
             backlog: connections
-        });
+        }, callBack);
     }
-
+    
     private var _host:Host = null;
     private var _port:Int;
     public function bind(host:Host, port:Int):Void {
         _host = host;
         _port = port;
     }
-
+    
     public function setBlocking(blocking:Bool) {
-
+        
     }
 
-    public function setTimeout(timeout:Int) {
+    public function setTimeout(value:Int) {
+        _socket.setTimeout(value);
     }
 
-    public function close() {
+    public function close(?callBack:Void -> Void) {
         if (_server != null) {
-            _server.close();
+            _server.close(callBack);
         }
         if (_socket != null) {
             _socket.destroy();
         }
     }
-
+    
     public static function select(read : Array<SocketImpl>, write : Array<SocketImpl>, others : Array<SocketImpl>, ?timeout : Float) : { read: Array<SocketImpl>, write: Array<SocketImpl>, others: Array<SocketImpl> } {
         if (write != null && write.length > 0) {
             throw "Not implemented";
@@ -104,7 +105,7 @@ class NodeSocket {
                 }
             }
         }
-
+        
         return ret;
     }
 }

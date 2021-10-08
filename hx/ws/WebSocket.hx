@@ -22,7 +22,6 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         if (immediateOpen) {
             open();
         }
-        set_binaryType(Types.BinaryType.ARRAYBUFFER);
     }
 
     private function createSocket()
@@ -35,6 +34,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
             throw "Socket already connected";
         }
         _ws = createSocket();
+        set_binaryType(Types.BinaryType.ARRAYBUFFER);
     }
 
     public var onopen(get, set):Function;
