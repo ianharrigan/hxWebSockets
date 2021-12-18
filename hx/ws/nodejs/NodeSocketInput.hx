@@ -6,15 +6,15 @@ import js.node.Buffer;
 @:access(hx.ws.nodejs.NodeSocket)
 class NodeSocketInput {
     private var _socket:NodeSocket;
-    
+
     public var hasData = false;
-    
-    private var _buffer = null;
+
+    private var _buffer: Buffer = null;
     public function new(socket:NodeSocket) {
         _socket = socket;
         _socket._socket.on("data", onData);
     }
-    
+
     private function onData(data:Any) {
         var a = [];
         if (_buffer != null) {
@@ -24,7 +24,7 @@ class NodeSocketInput {
         _buffer = Buffer.concat(a);
         hasData = true;
     }
-    
+
     public function readBytes(s:Bytes, pos:Int, len:Int):Int {
         if (_buffer == null) {
             return 0;
