@@ -36,6 +36,12 @@ class WebSocketServer
         return new SocketImpl();
     }
 
+    public function sendAll(data:Any) {
+        for (h in handlers) {
+            h.send(data);
+        }
+    }
+    
     public function start() {
         _stopServer = false;
 
@@ -56,6 +62,19 @@ class WebSocketServer
             Sys.sleep(sleepAmount);
         }
 
+        #elseif threaded_server
+
+        MainLoop.addThread(function() {
+            while (true) {
+                var continueLoop = tick();
+                if (continueLoop == false) {
+                    break;
+                }
+
+                Sys.sleep(sleepAmount);
+            }
+        });
+        
         #else
 
         MainLoop.add(function() {

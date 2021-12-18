@@ -22,11 +22,9 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         if (immediateOpen) {
             open();
         }
-        set_binaryType(Types.BinaryType.ARRAYBUFFER);
     }
 
-    private function createSocket()
-    {
+    private function createSocket() {
         return new js.html.WebSocket(_url);
     }
 
@@ -35,41 +33,78 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
             throw "Socket already connected";
         }
         _ws = createSocket();
+        set_binaryType(Types.BinaryType.ARRAYBUFFER);
+        if (_onopenbeforeready != null) {
+            onopen = _onopenbeforeready;
+            _onopenbeforeready = null;
+        }
+        if (_onclosebeforeready != null) {
+            onclose = _onclosebeforeready;
+            _onclosebeforeready = null;
+        }
+        if (_onerrorbeforeready != null) {
+            onerror = _onerrorbeforeready;
+            _onerrorbeforeready = null;
+        }
+        if (_onmessagebeforeready != null) {
+            onmessage = _onmessagebeforeready;
+            _onmessagebeforeready = null;
+        }
     }
 
+    private var _onopenbeforeready:Function = null;
     public var onopen(get, set):Function;
     private function get_onopen():Function {
         return _ws.onopen;
     }
     private function set_onopen(value:Function):Function {
+        if (_ws == null) {
+            _onopenbeforeready = value;
+            return value;
+        }
         _ws.onopen = value;
         return value;
     }
 
+    private var _onclosebeforeready:Function = null;
     public var onclose(get, set):Function;
     private function get_onclose():Function {
         return _ws.onclose;
     }
     private function set_onclose(value:Function):Function {
+        if (_ws == null) {
+            _onclosebeforeready = value;
+            return value;
+        }
         _ws.onclose = value;
         return value;
     }
 
+    private var _onerrorbeforeready:Function = null;
     public var onerror(get, set):Function;
     private function get_onerror():Function {
         return _ws.onerror;
     }
     private function set_onerror(value:Function):Function {
+        if (_ws == null) {
+            _onerrorbeforeready = value;
+            return value;
+        }
         _ws.onerror = value;
         return value;
     }
 
+    private var _onmessagebeforeready:Function = null;
     private var _onmessage:Function = null;
     public var onmessage(get, set):Function;
     private function get_onmessage():Function {
         return _onmessage;
     }
     private function set_onmessage(value:Function):Function {
+        if (_ws == null) {
+            _onmessagebeforeready = value;
+            return value;
+        }
         _onmessage = value;
         _ws.onmessage = function(message: Dynamic) {
             if (_onmessage != null) {
@@ -96,6 +131,12 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
 
     public function close() {
         _ws.close();
+        onopen = null;
+        onclose = null;
+        onerror = null;
+        onmessage = null;
+        _onmessage = null;
+        _ws = null;
     }
 
     public function send(msg:Any) {
