@@ -13,7 +13,7 @@ class Log {
     public static var logFn:Dynamic->Void = js.html.Console.log;
     #end
     
-    public static function info(data:String, id:Null<Int> = null) {
+    public static function info(data:String, id:String = null) {
         if (mask & INFO != INFO) {
             return;
         }
@@ -25,7 +25,7 @@ class Log {
         }
     }
 
-    public static function debug(data:String, id:Null<Int> = null) {
+    public static function debug(data:String, id:String = null) {
         if (mask & DEBUG != DEBUG) {
             return;
         }
@@ -37,7 +37,7 @@ class Log {
         }
     }
 
-    public static function data(data:String, id:Null<Int> = null) {
+    public static function data(data:String, id:String = null) {
         if (mask & DATA != DATA) {
             return;
         }

@@ -5,10 +5,10 @@ import haxe.crypto.Base64;
 import haxe.crypto.Sha1;
 import haxe.io.Bytes;
 import haxe.io.Error;
+import hx.ws.Util;
 
 class WebSocketCommon {
-    private static var _nextId:Int = 1;
-    public var id:Int;
+    public var id:String;
     public var state:State = State.Handshake;
 
     public var isClient = true;
@@ -26,7 +26,7 @@ class WebSocketCommon {
     private var _buffer:Buffer = new Buffer();
 
     public function new(socket:SocketImpl = null) {
-        id = _nextId++;
+        id = Util.generateUUID();
         if (socket == null) {
             _socket = new SocketImpl();
         } else {
