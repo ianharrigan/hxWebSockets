@@ -1,14 +1,26 @@
 package hx.ws;
 
-import haxe.io.Bytes;
-
 class WebSocketHandler extends Handler {
+    public static var MAX_WAIT_TIME:Int = 1000; // if no handshake has happened after this time (in seconds), we'll consider it dead and disconnect
+    
+    private var _creationTime:Float;
+    
     public function new(socket:SocketImpl) {
         super(socket);
+        _creationTime = Sys.time();
         _socket.setBlocking(false);
         Log.debug('New socket handler', id);
     }
 
+    public override function handle() {
+        if (this.state == State.Handshake && Sys.time() - _creationTime > (MAX_WAIT_TIME / 1000)) {
+            Log.info('No handshake detected in ${MAX_WAIT_TIME}ms, closing connection', id);
+            this.close();
+            return;
+        }
+        super.handle();
+    }
+    
     private override function handleData() {
         switch (state) {
             case State.Handshake:
