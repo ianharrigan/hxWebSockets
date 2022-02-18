@@ -26,6 +26,11 @@ class WebSocketServer
     public var onClientAdded:T->Void = null;
     public var onClientRemoved:T->Void = null;
 
+    #if threaded_handlers
+    private var _serverMutex:sys.thread.Mutex = new sys.thread.Mutex();
+    private var _handlersClosed:Array<T> = [];
+    #end
+    
     public function new(host:String, port:Int, maxConnections:Int = 1) {
         _host = host;
         _port = port;
@@ -93,8 +98,24 @@ class WebSocketServer
         if (onClientAdded != null) {
             onClientAdded(handler);
         }
+        
+        #if threaded_handlers
+        var thread = sys.thread.Thread.create(handlerThread);
+        thread.sendMessage(handler);
+        #end
     }
 
+    private function handlerThread() {
+        var handler:T = sys.thread.Thread.readMessage(true);
+        while (handler.state != State.Closed) {
+            handler.handle();
+            Sys.sleep(sleepAmount);
+        }
+        _serverMutex.acquire();
+        _handlersClosed.push(handler);
+        _serverMutex.release();
+    }
+    
     public function tick() {
         if (_stopServer == true) {
             for (h in handlers) {
@@ -118,6 +139,8 @@ class WebSocketServer
             }
         }
 
+        #if !threaded_handlers
+        
         for (h in handlers) {
             h.handle();
         }
@@ -136,6 +159,21 @@ class WebSocketServer
                 onClientRemoved(h);
             }
         }
+        
+        #else
+        
+        _serverMutex.acquire();
+        while (_handlersClosed.length > 0) {
+            var h = _handlersClosed.shift();
+            handlers.remove(h);
+            Log.debug("Removing web server handler from list - total: " + handlers.length, h.id);
+            if (onClientRemoved != null) {
+                onClientRemoved(h);
+            }
+        }
+        _serverMutex.release();
+        
+        #end
 
         return true;
     }
