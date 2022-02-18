@@ -46,7 +46,7 @@
   <options>
     <option showHiddenPaths="False" />
     <option testMovie="Custom" />
-    <option testMovieCommand="run-cpp" />
+    <option testMovieCommand="run-cpp.bat $(BuildConfig)" />
   </options>
   <!-- Plugin storage -->
   <storage />
