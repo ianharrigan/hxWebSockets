@@ -111,9 +111,11 @@ class WebSocketServer
             handler.handle();
             Sys.sleep(sleepAmount);
         }
+        #if threaded_handlers
         _serverMutex.acquire();
         _handlersClosed.push(handler);
         _serverMutex.release();
+        #end
     }
     
     public function tick() {
