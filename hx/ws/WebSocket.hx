@@ -334,12 +334,17 @@ class WebSocket extends WebSocketCommon {
         }
 
         var secKey = httpResponse.headers.get(HttpHeader.SEC_WEBSOSCKET_ACCEPT);
-        if (secKey != makeWSKeyResponse(_encodedKey)) {
-            if (onerror != null) {
-                onerror("Error during WebSocket handshake: Incorrect 'Sec-WebSocket-Accept' header value");
+        
+        if(secKey == null) {
+            trace("This server does not implement Sec-WebSocket-Key.");
+        } else {
+            if (secKey != makeWSKeyResponse(_encodedKey)) {
+                if (onerror != null) {
+                    onerror("Error during WebSocket handshake: Incorrect 'Sec-WebSocket-Accept' header value");
+                }
+                close();
+                return;
             }
-            close();
-            return;
         }
 
         _onopenCalled = false;
