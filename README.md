@@ -4,7 +4,7 @@
 Haxe Websockets supporting the following targets:
 - C++
 - HashLink
-- JavaScript
+- Nodejs
 
 Incomplete support for Java and C#.
 
