@@ -108,7 +108,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         _onmessage = value;
         _ws.onmessage = function(message: Dynamic) {
             if (_onmessage != null) {
-                if (Std.is(message.data, JsBuffer)) {
+                if (message.data is JsBuffer) {
                     var buffer = new Buffer();
                     buffer.writeBytes(Bytes.ofData(message.data));
                     _onmessage(BytesMessage(buffer));
@@ -140,10 +140,10 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
     }
 
     public function send(msg:Any) {
-        if (Std.is(msg, Bytes)) {
+        if (msg is Bytes) {
             var bytes = cast(msg, Bytes);
             _ws.send(bytes.getData());
-        } else if (Std.is(msg, Buffer)) {
+        } else if (msg is Buffer) {
             var buffer = cast(msg, Buffer);
             _ws.send(buffer.readAllAvailableBytes().getData());
         } else {
