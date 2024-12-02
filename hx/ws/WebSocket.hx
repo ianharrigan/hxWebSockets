@@ -170,6 +170,7 @@ class WebSocket extends WebSocketCommon {
     public var _host:String;
     public var _port:Int = 0;
     public var _path:String;
+    public var _search:String;
     
     public var _fullUrl:String;
 
