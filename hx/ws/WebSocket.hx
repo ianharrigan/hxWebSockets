@@ -170,6 +170,8 @@ class WebSocket extends WebSocketCommon {
     public var _host:String;
     public var _port:Int = 0;
     public var _path:String;
+    
+    public var _fullUrl:String;
 
     private var _processThread:Thread;
     private var _encodedKey:String = "wskey";
@@ -190,11 +192,13 @@ class WebSocket extends WebSocketCommon {
 
     inline private function parseUrl(url)
     {
-        var urlRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?$/;
+        var urlRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?(\?[=&\w\.-]+)?$/;
 
         if ( ! urlRegExp.match(url)) {
             throw 'Uri not matching websocket URL "${url}"';
         }
+        
+        _fullUrl = url;
 
         _protocol = urlRegExp.matched(1);
 
@@ -209,6 +213,7 @@ class WebSocket extends WebSocketCommon {
             _path = "/";
         }
 
+        _search = urlRegExp.matched(6);
     }
 
     private function createSocket():SocketImpl
@@ -284,7 +289,7 @@ class WebSocket extends WebSocketCommon {
         var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
         // TODO: should propably be hostname+port+path?
-        httpRequest.uri = _path;
+        httpRequest.uri = _fullUrl;
         httpRequest.httpVersion = "HTTP/1.1";
 
         httpRequest.headers.set(HttpHeader.HOST, _host + ":" + _port);
