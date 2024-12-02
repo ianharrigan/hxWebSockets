@@ -5,7 +5,6 @@ import haxe.crypto.Base64;
 import haxe.crypto.Sha1;
 import haxe.io.Bytes;
 import haxe.io.Error;
-import hx.ws.Util;
 
 class WebSocketCommon {
     public var id:String;
@@ -25,8 +24,9 @@ class WebSocketCommon {
 
     private var _buffer:Buffer = new Buffer();
 
+    static var _next_id = 0;
     public function new(socket:SocketImpl = null) {
-        id = Util.generateUUID();
+        id = '${_next_id ++}';
         if (socket == null) {
             _socket = new SocketImpl();
         } else {
