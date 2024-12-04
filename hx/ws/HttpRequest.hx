@@ -5,9 +5,10 @@ class HttpRequest {
     public var uri:String = null;
     public var httpVersion:String = null;
 
-    public var headers:Map<String, String> = new Map<String, String>();
+    public var headers:Map<String, String>;
 
-    public function new() {
+    public function new(headers:Map<String, String> = null) {
+        this.headers = headers != null ? headers : new Map<String, String>();
     }
 
     public function addLine(line:String) {

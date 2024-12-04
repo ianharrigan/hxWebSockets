@@ -15,10 +15,12 @@ import haxe.io.Bytes;
 
 class WebSocket { // lets use composition so we can intercept send / onmessage and convert to something haxey if its binary
     private var _url:String;
+    private var _handshakeHeaders:Map<String, String> = null;
     private var _ws:js.html.WebSocket = null;
 
-    public function new(url:String, immediateOpen=true) {
+    public function new(url:String, immediateOpen = true, headers:Map<String, String> = null) {
         _url = url;
+        _handshakeHeaders = headers;
         if (immediateOpen) {
             open();
         }
@@ -151,9 +153,7 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         }
     }
 }
-
 #elseif sys
-
 #if (haxe_ver >= 4)
 import sys.thread.Thread;
 #elseif neko
@@ -161,7 +161,6 @@ import neko.vm.Thread;
 #elseif cpp
 import cpp.vm.Thread;
 #end
-
 import haxe.crypto.Base64;
 import haxe.io.Bytes;
 
@@ -171,8 +170,10 @@ class WebSocket extends WebSocketCommon {
     public var _port:Int = 0;
     public var _path:String;
     public var _search:String;
-    
-    public var _fullUrl:String;
+
+    public var _fullUri:String;
+
+    private var _handshakeHeaders:Map<String, String> = null;
 
     private var _processThread:Thread;
     private var _encodedKey:String = "wskey";
@@ -181,8 +182,9 @@ class WebSocket extends WebSocketCommon {
 
     public var additionalHeaders(get, null):Map<String, String>;
 
-    public function new(url:String, immediateOpen=true) {
+    public function new(url:String, immediateOpen = true, headers:Map<String, String> = null) {
         parseUrl(url);
+        _handshakeHeaders = headers;
 
         super(createSocket());
 
@@ -191,15 +193,14 @@ class WebSocket extends WebSocketCommon {
         }
     }
 
-    inline private function parseUrl(url)
-    {
+    inline private function parseUrl(url) {
         var urlRegExp = ~/^(\w+?):\/\/([\w\.-]+)(:(\d+))?(\/.*)?(\?[=&\w\.-]+)?$/;
 
-        if ( ! urlRegExp.match(url)) {
+        if (!urlRegExp.match(url)) {
             throw 'Uri not matching websocket URL "${url}"';
         }
-        
-        _fullUrl = url;
+
+        _fullUri = url;
 
         _protocol = urlRegExp.matched(1);
 
@@ -287,10 +288,10 @@ class WebSocket extends WebSocketCommon {
     }
 
     public function sendHandshake() {
-        var httpRequest = new HttpRequest();
+        var httpRequest = new HttpRequest(_handshakeHeaders);
         httpRequest.method = "GET";
         // TODO: should propably be hostname+port+path?
-        httpRequest.uri = _fullUrl;
+        httpRequest.uri = _fullUri;
         httpRequest.httpVersion = "HTTP/1.1";
 
         httpRequest.headers.set(HttpHeader.HOST, _host + ":" + _port);
