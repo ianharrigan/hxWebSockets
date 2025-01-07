@@ -72,6 +72,10 @@ class WebSocketHandler extends Handler {
             httpResponse.headers.set(HttpHeader.CONNECTION, "Upgrade");
             httpResponse.headers.set(HttpHeader.SEC_WEBSOSCKET_ACCEPT, result);
         }
+        
+        if (validateHandshake != null) {
+            httpResponse = validateHandshake(httpRequest, httpResponse) ?? httpResponse;
+        }
 
         sendHttpResponse(httpResponse);
 
