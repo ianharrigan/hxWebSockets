@@ -259,7 +259,7 @@ class WebSocketCommon {
                     }
                     #else
 
-                    needClose = !(e == 'Blocking' || (Std.isOfType(e, Error) && (e:Error).match(Error.Blocked)) || !(state == Handshake && e == haxe.io.Eof));
+                    needClose = !(e == 'Blocking' || (Std.isOfType(e, Error) && (e:Error).match(Error.Blocked)) || (state == Handshake && e == haxe.io.Eof));
 
                     #end
                 }
