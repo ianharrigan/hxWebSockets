@@ -160,7 +160,9 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
         }
     }
 }
+
 #elseif sys
+
 #if (haxe_ver >= 4)
 import sys.thread.Thread;
 #elseif neko
@@ -168,6 +170,7 @@ import neko.vm.Thread;
 #elseif cpp
 import cpp.vm.Thread;
 #end
+
 import haxe.crypto.Base64;
 import haxe.io.Bytes;
 
