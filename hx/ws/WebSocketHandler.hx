@@ -73,18 +73,22 @@ class WebSocketHandler extends Handler {
             httpResponse.headers.set(HttpHeader.SEC_WEBSOSCKET_ACCEPT, result);
         }
         
-        if (validateHandshake != null) {
-            httpResponse = validateHandshake(httpRequest, httpResponse) ?? httpResponse;
+        function callback(httpResponse: HttpResponse) {
+            sendHttpResponse(httpResponse);
+
+            if (httpResponse.code == 101) {
+                _onopenCalled = false;
+                state = State.Head;
+                Log.debug('Connected', id);
+            } else {
+                close();
+            }
         }
-
-        sendHttpResponse(httpResponse);
-
-        if (httpResponse.code == 101) {
-            _onopenCalled = false;
-            state = State.Head;
-            Log.debug('Connected', id);
+        
+        if (validateHandshake != null) {
+            validateHandshake(httpRequest, httpResponse, callback);
         } else {
-            close();
+            callback(httpResponse);
         }
     }
 }

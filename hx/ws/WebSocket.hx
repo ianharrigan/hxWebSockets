@@ -15,19 +15,26 @@ import haxe.io.Bytes;
 
 class WebSocket { // lets use composition so we can intercept send / onmessage and convert to something haxey if its binary
     private var _url:String;
-    private var _handshakeHeaders:Map<String, String> = null;
+    private var _protocols:Array<String> = null;
     private var _ws:js.html.WebSocket = null;
+    
+    public var protocol(get, null): String;
+    function get_protocol() {
+        if (_ws == null)
+            return null;
+        return _ws.protocol;
+    }
 
-    public function new(url:String, immediateOpen = true, headers:Map<String, String> = null) {
+    public function new(url:String, immediateOpen = true, protocols:Array<String> = null) {
         _url = url;
-        _handshakeHeaders = headers;
+        _protocols = protocols;
         if (immediateOpen) {
             open();
         }
     }
 
     private function createSocket() {
-        return new js.html.WebSocket(_url);
+        return new js.html.WebSocket(_url, _protocols);
     }
 
     public function open() {
@@ -173,7 +180,8 @@ class WebSocket extends WebSocketCommon {
 
     public var _fullUri:String;
 
-    private var _handshakeHeaders:Map<String, String> = null;
+    private var _protocols: Array<String>;
+    public var protocol(default, null): String = null;
 
     private var _processThread:Thread;
     private var _encodedKey:String = "wskey";
@@ -182,9 +190,9 @@ class WebSocket extends WebSocketCommon {
 
     public var additionalHeaders(get, null):Map<String, String>;
 
-    public function new(url:String, immediateOpen = true, headers:Map<String, String> = null) {
+    public function new(url:String, immediateOpen = true, protocols: Array<String> = null) {
         parseUrl(url);
-        _handshakeHeaders = headers;
+        _protocols = protocols;
 
         super(createSocket());
 
@@ -288,7 +296,7 @@ class WebSocket extends WebSocketCommon {
     }
 
     public function sendHandshake() {
-        var httpRequest = new HttpRequest(_handshakeHeaders);
+        var httpRequest = new HttpRequest();
         httpRequest.method = "GET";
         // TODO: should propably be hostname+port+path?
         httpRequest.uri = _fullUri;
@@ -302,6 +310,10 @@ class WebSocket extends WebSocketCommon {
         httpRequest.headers.set(HttpHeader.PRAGMA, "no-cache");
         httpRequest.headers.set(HttpHeader.CACHE_CONTROL, "no-cache");
         httpRequest.headers.set(HttpHeader.ORIGIN, _socket.host().host.toString() + ":" + _socket.host().port);
+        
+        if (_protocols != null) {
+            httpRequest.headers.set(HttpHeader.SEC_WEBSOCKET_PROTOCOL, _protocols.join(', '));
+        }
 
         _encodedKey = generateWSKey();
         httpRequest.headers.set(HttpHeader.SEC_WEBSOCKET_KEY, _encodedKey);
@@ -352,6 +364,11 @@ class WebSocket extends WebSocketCommon {
                 close();
                 return;
             }
+        }
+        
+        var protocol = httpResponse.headers.get(HttpHeader.SEC_WEBSOCKET_PROTOCOL);
+        if (protocol != null) {
+            this.protocol = protocol;
         }
 
         _onopenCalled = false;

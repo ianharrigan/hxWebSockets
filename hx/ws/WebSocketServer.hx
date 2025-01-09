@@ -105,6 +105,7 @@ class WebSocketServer
         #end
     }
 
+    #if (target.threaded)
     private function handlerThread() {
         var handler:T = sys.thread.Thread.readMessage(true);
         while (handler.state != State.Closed) {
@@ -117,6 +118,7 @@ class WebSocketServer
         _serverMutex.release();
         #end
     }
+    #end
     
     public function tick() {
         if (_stopServer == true) {
