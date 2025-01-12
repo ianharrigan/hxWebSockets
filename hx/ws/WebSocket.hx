@@ -18,6 +18,19 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
     private var _protocols:Array<String> = null;
     private var _ws:js.html.WebSocket = null;
     
+    public var state(get, null): State;
+    function get_state() {
+        if (_ws == null) return Closed;
+        switch (_ws.readyState) {
+            case js.html.WebSocket.CONNECTING:
+                return Handshake;
+            case js.html.WebSocket.OPEN:
+                return Body;
+        }
+        
+        return Closed;
+    }
+    
     public var protocol(get, null): String;
     function get_protocol() {
         if (_ws == null)
@@ -149,6 +162,8 @@ class WebSocket { // lets use composition so we can intercept send / onmessage a
     }
 
     public function send(msg:Any) {
+        if (_ws == null)
+            throw("Socket not connected");
         if (msg is Bytes) {
             var bytes = cast(msg, Bytes);
             _ws.send(bytes.getData());
